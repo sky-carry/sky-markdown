@@ -1,0 +1,44 @@
+/* Structural tweaks for the editor host. Theme colors are owned by the theme module. */
+
+.sky-editor-host {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.sky-editor-host .milkdown {
+  width: 100%;
+  height: 100%;
+}
+
+.sky-editor-host .milkdown .editor {
+  outline: none;
+}
+
+.sky-source-textarea {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 1em 2em;
+  border: none;
+  resize: none;
+  outline: none;
+  font-family: 'Consolas', 'Menlo', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  tab-size: 2;
+  background: transparent;
+  color: inherit;
+}
+
+.sky-editor-host.source-mode .sky-source-textarea {
+  display: block;
+}
+
+.sky-editor-host.source-mode .milkdown {
+  display: none;
+}

@@ -1,0 +1,175 @@
+/* Night theme — dark surfaces, soft light text, blue links. */
+[data-theme='night'] {
+  --nt-bg: #1a1a1a;
+  --nt-surface: #1e1e1e;
+  --nt-text: #c8c8c8;
+  --nt-heading: #e6e6e6;
+  --nt-muted: #8a8a8a;
+  --nt-link: #6cb6ff;
+  --nt-border: #333333;
+  --nt-code-bg: #2a2a2a;
+  --nt-quote-border: #4a4a4a;
+  --nt-font: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui,
+    sans-serif;
+  --nt-mono: "Cascadia Code", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+[data-theme='night'] body,
+[data-theme='night'] .content {
+  background: var(--nt-bg);
+  color: var(--nt-text);
+}
+
+[data-theme='night'] .ProseMirror {
+  font-family: var(--nt-font);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--nt-text);
+}
+
+[data-theme='night'] .ProseMirror h1,
+[data-theme='night'] .ProseMirror h2,
+[data-theme='night'] .ProseMirror h3,
+[data-theme='night'] .ProseMirror h4,
+[data-theme='night'] .ProseMirror h5,
+[data-theme='night'] .ProseMirror h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.3em 0 0.6em;
+  color: var(--nt-heading);
+}
+
+[data-theme='night'] .ProseMirror h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--nt-border);
+}
+[data-theme='night'] .ProseMirror h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--nt-border);
+}
+[data-theme='night'] .ProseMirror h3 {
+  font-size: 1.25em;
+}
+[data-theme='night'] .ProseMirror h4 {
+  font-size: 1.05em;
+}
+[data-theme='night'] .ProseMirror h5 {
+  font-size: 0.9em;
+}
+[data-theme='night'] .ProseMirror h6 {
+  font-size: 0.85em;
+  color: var(--nt-muted);
+}
+
+[data-theme='night'] .ProseMirror p {
+  margin: 0 0 1em;
+}
+
+[data-theme='night'] .ProseMirror a {
+  color: var(--nt-link);
+  text-decoration: none;
+}
+[data-theme='night'] .ProseMirror a:hover {
+  text-decoration: underline;
+}
+
+[data-theme='night'] .ProseMirror strong {
+  font-weight: 600;
+  color: var(--nt-heading);
+}
+[data-theme='night'] .ProseMirror em {
+  font-style: italic;
+}
+
+[data-theme='night'] .ProseMirror code {
+  font-family: var(--nt-mono);
+  font-size: 85%;
+  background: var(--nt-code-bg);
+  color: #e0e0e0;
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+}
+
+[data-theme='night'] .ProseMirror pre {
+  background: var(--nt-code-bg);
+  border: 1px solid var(--nt-border);
+  border-radius: 6px;
+  padding: 16px;
+  overflow: auto;
+  line-height: 1.5;
+  margin: 0 0 1em;
+}
+
+[data-theme='night'] .ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+  color: #d4d4d4;
+}
+
+[data-theme='night'] .ProseMirror blockquote {
+  margin: 0 0 1em;
+  padding: 0 1em;
+  color: var(--nt-muted);
+  border-left: 0.25em solid var(--nt-quote-border);
+}
+
+[data-theme='night'] .ProseMirror ul,
+[data-theme='night'] .ProseMirror ol {
+  margin: 0 0 1em;
+  padding-left: 2em;
+}
+[data-theme='night'] .ProseMirror li {
+  margin: 0.25em 0;
+}
+
+[data-theme='night'] .ProseMirror table {
+  border-collapse: collapse;
+  margin: 0 0 1em;
+  width: 100%;
+}
+[data-theme='night'] .ProseMirror th,
+[data-theme='night'] .ProseMirror td {
+  border: 1px solid var(--nt-border);
+  padding: 6px 13px;
+}
+[data-theme='night'] .ProseMirror th {
+  background: var(--nt-code-bg);
+  font-weight: 600;
+  color: var(--nt-heading);
+}
+[data-theme='night'] .ProseMirror tr:nth-child(2n) td {
+  background: #232323;
+}
+
+[data-theme='night'] .ProseMirror hr {
+  height: 1px;
+  border: 0;
+  background: var(--nt-border);
+  margin: 2em 0;
+}
+
+[data-theme='night'] .ProseMirror img {
+  max-width: 100%;
+}
+
+[data-theme='night'] .sidebar {
+  background: #161616;
+  color: var(--nt-text);
+  border-right: 1px solid var(--nt-border);
+}
+
+[data-theme='night'] .statusbar {
+  background: #161616;
+  color: var(--nt-muted);
+  border-top: 1px solid var(--nt-border);
+}
+
+[data-theme='night'] .content textarea,
+[data-theme='night'] .editor-host textarea {
+  background: var(--nt-surface);
+  color: var(--nt-text);
+  font-family: var(--nt-mono);
+  border: none;
+}

@@ -1,0 +1,177 @@
+/* GitHub theme — clean white surface, dark text, blue links. */
+[data-theme='github'] {
+  --gh-bg: #ffffff;
+  --gh-text: #24292e;
+  --gh-muted: #6a737d;
+  --gh-link: #0366d6;
+  --gh-border: #e1e4e8;
+  --gh-code-bg: #f6f8fa;
+  --gh-quote-border: #dfe2e5;
+  --gh-font: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui,
+    sans-serif;
+  --gh-mono: "SFMono-Regular", "Cascadia Code", Consolas, "Liberation Mono", Menlo,
+    monospace;
+}
+
+[data-theme='github'] body,
+[data-theme='github'] .content {
+  background: var(--gh-bg);
+  color: var(--gh-text);
+}
+
+[data-theme='github'] .ProseMirror {
+  font-family: var(--gh-font);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--gh-text);
+}
+
+[data-theme='github'] .ProseMirror h1,
+[data-theme='github'] .ProseMirror h2,
+[data-theme='github'] .ProseMirror h3,
+[data-theme='github'] .ProseMirror h4,
+[data-theme='github'] .ProseMirror h5,
+[data-theme='github'] .ProseMirror h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 24px 0 16px;
+  color: var(--gh-text);
+}
+
+[data-theme='github'] .ProseMirror h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--gh-border);
+}
+
+[data-theme='github'] .ProseMirror h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--gh-border);
+}
+
+[data-theme='github'] .ProseMirror h3 {
+  font-size: 1.25em;
+}
+[data-theme='github'] .ProseMirror h4 {
+  font-size: 1em;
+}
+[data-theme='github'] .ProseMirror h5 {
+  font-size: 0.875em;
+}
+[data-theme='github'] .ProseMirror h6 {
+  font-size: 0.85em;
+  color: var(--gh-muted);
+}
+
+[data-theme='github'] .ProseMirror p {
+  margin: 0 0 16px;
+}
+
+[data-theme='github'] .ProseMirror a {
+  color: var(--gh-link);
+  text-decoration: none;
+}
+[data-theme='github'] .ProseMirror a:hover {
+  text-decoration: underline;
+}
+
+[data-theme='github'] .ProseMirror strong {
+  font-weight: 600;
+}
+[data-theme='github'] .ProseMirror em {
+  font-style: italic;
+}
+
+[data-theme='github'] .ProseMirror code {
+  font-family: var(--gh-mono);
+  font-size: 85%;
+  background: var(--gh-code-bg);
+  border-radius: 6px;
+  padding: 0.2em 0.4em;
+}
+
+[data-theme='github'] .ProseMirror pre {
+  background: var(--gh-code-bg);
+  border-radius: 6px;
+  padding: 16px;
+  overflow: auto;
+  line-height: 1.45;
+  margin: 0 0 16px;
+}
+
+[data-theme='github'] .ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 85%;
+}
+
+[data-theme='github'] .ProseMirror blockquote {
+  margin: 0 0 16px;
+  padding: 0 1em;
+  color: var(--gh-muted);
+  border-left: 0.25em solid var(--gh-quote-border);
+}
+
+[data-theme='github'] .ProseMirror ul,
+[data-theme='github'] .ProseMirror ol {
+  margin: 0 0 16px;
+  padding-left: 2em;
+}
+
+[data-theme='github'] .ProseMirror li {
+  margin: 0.25em 0;
+}
+
+[data-theme='github'] .ProseMirror table {
+  border-collapse: collapse;
+  margin: 0 0 16px;
+  display: block;
+  overflow: auto;
+}
+
+[data-theme='github'] .ProseMirror th,
+[data-theme='github'] .ProseMirror td {
+  border: 1px solid var(--gh-border);
+  padding: 6px 13px;
+}
+
+[data-theme='github'] .ProseMirror th {
+  font-weight: 600;
+  background: var(--gh-code-bg);
+}
+
+[data-theme='github'] .ProseMirror tr:nth-child(2n) td {
+  background: #fafbfc;
+}
+
+[data-theme='github'] .ProseMirror hr {
+  height: 0.25em;
+  border: 0;
+  background: var(--gh-border);
+  margin: 24px 0;
+}
+
+[data-theme='github'] .ProseMirror img {
+  max-width: 100%;
+}
+
+[data-theme='github'] .sidebar {
+  background: #f6f8fa;
+  color: var(--gh-text);
+  border-right: 1px solid var(--gh-border);
+}
+
+[data-theme='github'] .statusbar {
+  background: #f6f8fa;
+  color: var(--gh-muted);
+  border-top: 1px solid var(--gh-border);
+}
+
+[data-theme='github'] .content textarea,
+[data-theme='github'] .editor-host textarea {
+  background: var(--gh-bg);
+  color: var(--gh-text);
+  font-family: var(--gh-mono);
+  border: none;
+}

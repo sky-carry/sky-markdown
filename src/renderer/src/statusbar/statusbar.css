@@ -1,0 +1,76 @@
+/* Structural styles for the bottom status bar. Layout / spacing / hover only —
+ * no document-theme colors live here (those come from the theme layer). */
+
+#statusbar {
+  display: flex
+  align-items: center
+  justify-content: space-between
+  height: 28px
+  padding: 0 10px
+  font-size: 12px
+  line-height: 1
+  user-select: none
+}
+
+#statusbar.hidden {
+  display: none
+}
+
+.sb-group {
+  display: flex
+  align-items: center
+  gap: 6px
+}
+
+.sb-btn {
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  height: 20px
+  min-width: 20px
+  padding: 0 4px
+  border: none
+  background: transparent
+  border-radius: 4px
+  cursor: pointer
+  font-size: 12px
+  line-height: 1
+  opacity: 0.7
+}
+
+.sb-btn:hover {
+  opacity: 1
+  background: rgba(127, 127, 127, 0.18)
+}
+
+.sb-btn.sb-toggle-sidebar {
+  font-size: 13px
+}
+
+.sb-btn.sb-toggle-source {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
+  font-weight: 600
+}
+
+.sb-btn.sb-toggle-source.active {
+  opacity: 1
+  background: rgba(127, 127, 127, 0.22)
+}
+
+.sb-spell {
+  display: inline-flex
+  align-items: center
+  height: 20px
+  padding: 0 4px
+  font-size: 12px
+  opacity: 0.7
+}
+
+.sb-words {
+  display: inline-flex
+  align-items: center
+  height: 20px
+  padding: 0 4px
+  white-space: nowrap
+  cursor: default
+}

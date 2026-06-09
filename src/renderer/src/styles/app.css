@@ -1,0 +1,82 @@
+/* Structural layout only — colors/typography of the document live in the theme CSS. */
+:root {
+  --sidebar-width: 260px;
+  --statusbar-height: 28px;
+  --ui-font: -apple-system, "Segoe UI", system-ui, "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--ui-font);
+}
+
+.app {
+  display: flex;
+  height: calc(100vh - var(--statusbar-height));
+  width: 100vw;
+}
+
+.app.statusbar-hidden {
+  height: 100vh;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex: 0 0 var(--sidebar-width);
+  height: 100%;
+  overflow: hidden;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.18s ease;
+}
+
+.app.sidebar-collapsed .sidebar {
+  margin-left: calc(var(--sidebar-width) * -1);
+}
+
+.content {
+  flex: 1 1 auto;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.editor-host {
+  width: 100%;
+  max-width: 860px;
+  padding: 40px 48px 30vh 48px;
+}
+
+.statusbar {
+  height: var(--statusbar-height);
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  user-select: none;
+}
+
+.statusbar.hidden {
+  display: none;
+}
+
+/* Focus mode: dim everything except the active paragraph. */
+.app.focus-mode .ProseMirror > *:not(.is-active) {
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+}
+
+/* Typewriter mode keeps the caret line vertically centered. */
+.app.typewriter-mode .content {
+  scroll-padding-top: 40vh;
+}

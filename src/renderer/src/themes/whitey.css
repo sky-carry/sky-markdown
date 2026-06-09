@@ -1,0 +1,171 @@
+/* Whitey theme — ultra-clean light gray-white, neutral grays, thin headings. */
+[data-theme='whitey'] {
+  --wt-bg: #fcfcfc;
+  --wt-text: #3a3a3a;
+  --wt-muted: #8c8c8c;
+  --wt-link: #5a6b7b;
+  --wt-border: #ededed;
+  --wt-code-bg: #f4f4f4;
+  --wt-quote-border: #e0e0e0;
+  --wt-font: -apple-system, "Segoe UI", "Helvetica Neue", "PingFang SC",
+    "Microsoft YaHei", system-ui, sans-serif;
+  --wt-mono: "Cascadia Code", Consolas, Menlo, monospace;
+}
+
+[data-theme='whitey'] body,
+[data-theme='whitey'] .content {
+  background: var(--wt-bg);
+  color: var(--wt-text);
+}
+
+[data-theme='whitey'] .ProseMirror {
+  font-family: var(--wt-font);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--wt-text);
+}
+
+[data-theme='whitey'] .ProseMirror h1,
+[data-theme='whitey'] .ProseMirror h2,
+[data-theme='whitey'] .ProseMirror h3,
+[data-theme='whitey'] .ProseMirror h4,
+[data-theme='whitey'] .ProseMirror h5,
+[data-theme='whitey'] .ProseMirror h6 {
+  font-weight: 300;
+  line-height: 1.35;
+  margin: 1.4em 0 0.6em;
+  color: #2b2b2b;
+}
+
+[data-theme='whitey'] .ProseMirror h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--wt-border);
+}
+[data-theme='whitey'] .ProseMirror h2 {
+  font-size: 1.55em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--wt-border);
+}
+[data-theme='whitey'] .ProseMirror h3 {
+  font-size: 1.25em;
+  font-weight: 400;
+}
+[data-theme='whitey'] .ProseMirror h4 {
+  font-size: 1.05em;
+  font-weight: 400;
+}
+[data-theme='whitey'] .ProseMirror h5 {
+  font-size: 0.9em;
+  font-weight: 500;
+}
+[data-theme='whitey'] .ProseMirror h6 {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--wt-muted);
+}
+
+[data-theme='whitey'] .ProseMirror p {
+  margin: 0 0 1.1em;
+}
+
+[data-theme='whitey'] .ProseMirror a {
+  color: var(--wt-link);
+  text-decoration: none;
+  border-bottom: 1px solid var(--wt-border);
+}
+[data-theme='whitey'] .ProseMirror a:hover {
+  border-bottom-color: var(--wt-link);
+}
+
+[data-theme='whitey'] .ProseMirror strong {
+  font-weight: 600;
+}
+[data-theme='whitey'] .ProseMirror em {
+  font-style: italic;
+}
+
+[data-theme='whitey'] .ProseMirror code {
+  font-family: var(--wt-mono);
+  font-size: 85%;
+  background: var(--wt-code-bg);
+  border-radius: 3px;
+  padding: 0.2em 0.4em;
+}
+
+[data-theme='whitey'] .ProseMirror pre {
+  background: var(--wt-code-bg);
+  border: 1px solid var(--wt-border);
+  border-radius: 4px;
+  padding: 14px 16px;
+  overflow: auto;
+  line-height: 1.5;
+  margin: 0 0 1.1em;
+}
+
+[data-theme='whitey'] .ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+}
+
+[data-theme='whitey'] .ProseMirror blockquote {
+  margin: 0 0 1.1em;
+  padding: 0 1.1em;
+  color: var(--wt-muted);
+  border-left: 3px solid var(--wt-quote-border);
+}
+
+[data-theme='whitey'] .ProseMirror ul,
+[data-theme='whitey'] .ProseMirror ol {
+  margin: 0 0 1.1em;
+  padding-left: 2em;
+}
+[data-theme='whitey'] .ProseMirror li {
+  margin: 0.3em 0;
+}
+
+[data-theme='whitey'] .ProseMirror table {
+  border-collapse: collapse;
+  margin: 0 0 1.1em;
+  width: 100%;
+}
+[data-theme='whitey'] .ProseMirror th,
+[data-theme='whitey'] .ProseMirror td {
+  border: 1px solid var(--wt-border);
+  padding: 7px 12px;
+}
+[data-theme='whitey'] .ProseMirror th {
+  background: var(--wt-code-bg);
+  font-weight: 500;
+}
+
+[data-theme='whitey'] .ProseMirror hr {
+  border: 0;
+  height: 1px;
+  background: var(--wt-border);
+  margin: 2em 0;
+}
+
+[data-theme='whitey'] .ProseMirror img {
+  max-width: 100%;
+}
+
+[data-theme='whitey'] .sidebar {
+  background: #f7f7f7;
+  color: var(--wt-text);
+  border-right: 1px solid var(--wt-border);
+}
+
+[data-theme='whitey'] .statusbar {
+  background: #f7f7f7;
+  color: var(--wt-muted);
+  border-top: 1px solid var(--wt-border);
+}
+
+[data-theme='whitey'] .content textarea,
+[data-theme='whitey'] .editor-host textarea {
+  background: var(--wt-bg);
+  color: var(--wt-text);
+  font-family: var(--wt-mono);
+  border: none;
+}
