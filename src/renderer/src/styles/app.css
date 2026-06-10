@@ -54,7 +54,10 @@ body {
 .editor-host {
   width: 100%;
   max-width: 860px;
-  padding: 40px 48px 30vh 48px;
+  /* Modest bottom padding so short documents don't trigger a scrollbar from the
+     reserved empty space. The large "scroll past the end" gap is only applied in
+     typewriter mode (see below), where it's actually needed to center the caret. */
+  padding: 40px 48px 72px 48px;
 }
 
 .statusbar {
@@ -76,7 +79,12 @@ body {
   transition: opacity 0.2s ease;
 }
 
-/* Typewriter mode keeps the caret line vertically centered. */
+/* Typewriter mode keeps the caret line vertically centered: it needs a large
+   bottom gap so the last lines can still scroll up to the middle of the view. */
 .app.typewriter-mode .content {
   scroll-padding-top: 40vh;
+}
+
+.app.typewriter-mode .editor-host {
+  padding-bottom: 40vh;
 }

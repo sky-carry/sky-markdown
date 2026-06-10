@@ -3,13 +3,13 @@
 .sky-editor-host {
   position: relative;
   width: 100%;
-  height: 100%;
-  overflow: auto;
+  /* No height/overflow here: the host must grow with its content and let the
+     outer .content element be the single scroll container. A nested overflow
+     here caused a second scrollbar to appear even for short documents. */
 }
 
 .sky-editor-host .milkdown {
   width: 100%;
-  height: 100%;
 }
 
 .sky-editor-host .milkdown .editor {
