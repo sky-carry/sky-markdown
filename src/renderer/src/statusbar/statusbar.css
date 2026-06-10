@@ -62,19 +62,72 @@
 }
 
 .sb-right {
-  gap: 12px;
+  gap: 8px;
   padding-right: 4px;
 }
 
 .sb-spell {
-  opacity: 0.6;
   font-size: 12px;
-  cursor: default;
+  font-variant: small-caps;
 }
 
 .sb-words {
-  opacity: 0.75;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   white-space: nowrap;
-  cursor: default;
+}
+
+.sb-words-chevron {
+  font-size: 9px;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+/* ---- word-count popover ---- */
+.sb-words-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.sb-wordcount-popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  min-width: 160px;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2c2c2c;
+  border: 1px solid rgba(127, 127, 127, 0.25);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  font-size: 12px;
+  z-index: 50;
+}
+
+.sb-wordcount-popover[hidden] {
+  display: none;
+}
+
+.sb-wc-title {
+  padding: 2px 14px 8px;
+  font-weight: 600;
+  opacity: 0.85;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.16);
+  margin-bottom: 6px;
+}
+
+.sb-wc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 4px 14px;
+}
+
+.sb-wc-val {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.95;
+  font-weight: 600;
 }

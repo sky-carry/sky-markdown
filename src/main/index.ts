@@ -47,6 +47,15 @@ function createWindow(): void {
     }
   })
 
+  // Ensure the spell checker has a working dictionary (English), so toggling
+  // spell-check in the status bar actually underlines misspellings even on a
+  // non-English OS locale. Ignored if the dictionary can't be set.
+  try {
+    mainWindow.webContents.session.setSpellCheckerLanguages(['en-US'])
+  } catch {
+    /* spellchecker not available — non-fatal */
+  }
+
   // Window-state IPC from renderer
   ipcMain.on(Channels.windowSetTitle, (_e, title: string) => {
     mainWindow?.setTitle(title || 'Sky Markdown')
@@ -54,6 +63,39 @@ function createWindow(): void {
   ipcMain.on(Channels.windowSetDirty, (_e, dirty: boolean) => {
     if (!mainWindow) return
     mainWindow.setDocumentEdited(dirty)
+  })
+
+  // Right-click menu with spell-check suggestions + basic editing actions.
+  mainWindow.webContents.on('context-menu', (_e, params) => {
+    const wc = mainWindow?.webContents
+    if (!wc) return
+    const template: Electron.MenuItemConstructorOptions[] = []
+
+    if (params.misspelledWord) {
+      for (const suggestion of params.dictionarySuggestions) {
+        template.push({
+          label: suggestion,
+          click: () => wc.replaceMisspelling(suggestion)
+        })
+      }
+      if (params.dictionarySuggestions.length === 0) {
+        template.push({ label: '（无拼写建议）', enabled: false })
+      }
+      template.push({
+        label: '添加到词典',
+        click: () => wc.session.addWordToSpellCheckerDictionary(params.misspelledWord)
+      })
+      template.push({ type: 'separator' })
+    }
+
+    template.push(
+      { role: 'cut', label: '剪切' },
+      { role: 'copy', label: '复制' },
+      { role: 'paste', label: '粘贴' },
+      { type: 'separator' },
+      { role: 'selectAll', label: '全选' }
+    )
+    Menu.buildFromTemplate(template).popup({ window: mainWindow ?? undefined })
   })
 
   if (process.env['ELECTRON_RENDERER_URL']) {

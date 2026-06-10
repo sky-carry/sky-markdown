@@ -31,6 +31,8 @@ export interface EditorApi {
   getOutline(): OutlineItem[]
   getStats(): EditorStats
   scrollToHeading(slug: string): void
+  /** Toggle the browser spell-checker on the editable surface. */
+  setSpellCheck(on: boolean): void
   /** Render current document to standalone HTML (for export). */
   toHtml(): string
 }
@@ -55,9 +57,14 @@ export interface StatusBarApi {
   readonly el: HTMLElement
   setStats(stats: EditorStats): void
   setSourceMode(on: boolean): void
+  setSpellCheck(on: boolean): void
   setVisible(visible: boolean): void
   onToggleSidebar(cb: () => void): void
   onToggleSource(cb: () => void): void
+  /** Fired when the spell-check button is clicked; passes the new on/off state. */
+  onToggleSpellCheck(cb: (on: boolean) => void): void
+  /** Open/close the detailed word-count popover (also used by the View menu). */
+  toggleWordCount(): void
 }
 
 /** Theme manager. Implemented in theme/index.ts. */

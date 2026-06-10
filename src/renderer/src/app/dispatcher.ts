@@ -28,6 +28,7 @@ export class Dispatcher {
     this.d.sidebar.onJumpHeading((slug) => this.d.editor.scrollToHeading(slug))
     this.d.statusbar.onToggleSidebar(() => this.run(Cmd.viewToggleSidebar))
     this.d.statusbar.onToggleSource(() => this.run(Cmd.viewSourceMode))
+    this.d.statusbar.onToggleSpellCheck((on) => this.d.editor.setSpellCheck(on))
     this.refreshDerived()
     this.updateTitle()
   }
@@ -89,6 +90,9 @@ export class Dispatcher {
         break
       case Cmd.viewStatusBar:
         this.toggleStatusBar()
+        break
+      case Cmd.viewWordCount:
+        this.d.statusbar.toggleWordCount()
         break
       case Cmd.viewActualSize:
         this.setZoom(1)

@@ -77,6 +77,7 @@ export function createEditor(): EditorApi {
   let container: HTMLElement | null = null
   let textarea: HTMLTextAreaElement | null = null
   let sourceMode = false
+  let spellCheckOn = false
 
   let cachedMarkdown = ''
   let pendingMarkdown: string | null = null
@@ -138,6 +139,7 @@ export function createEditor(): EditorApi {
       mounted = true
       cachedMarkdown = initial
       pendingMarkdown = null
+      setSpellCheck(spellCheckOn) // apply initial state (default: off)
     } catch (err) {
       // Even if creation fails, keep the cached markdown so the rest of the
       // API stays usable (source mode, stats, outline) without throwing.
@@ -318,6 +320,16 @@ export function createEditor(): EditorApi {
     return typeof html === 'string' ? html : ''
   }
 
+  function setSpellCheck(on: boolean): void {
+    spellCheckOn = on
+    safeAction((ctx) => {
+      const dom = ctx.get(editorViewCtx).dom as HTMLElement
+      dom.spellcheck = on
+      dom.setAttribute('spellcheck', String(on))
+    })
+    if (textarea) textarea.spellcheck = on
+  }
+
   return {
     mount,
     getMarkdown: getMarkdownText,
@@ -330,6 +342,7 @@ export function createEditor(): EditorApi {
     getOutline,
     getStats,
     scrollToHeading,
+    setSpellCheck,
     toHtml
   }
 }
