@@ -29,9 +29,11 @@ function sortEntries(entries: DirEntry[]): DirEntry[] {
  */
 export function createSidebar(host: HTMLElement): SidebarApi {
   host.innerHTML = ''
-  host.classList.remove('collapsed')
 
-  let visible = true
+  // Start hidden to match the Typora home screen (toggle with Ctrl+Shift+L or the
+  // round status-bar button). The actual show/hide is driven by the app-level
+  // `.sidebar-collapsed` class (see app.css), set initially in index.html.
+  let visible = false
   let activePanel: SidebarPanel = 'outline'
   let openFileCb: ((path: string) => void) | null = null
   let jumpHeadingCb: ((slug: string) => void) | null = null

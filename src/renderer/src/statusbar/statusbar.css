@@ -1,76 +1,80 @@
-/* Structural styles for the bottom status bar. Layout / spacing / hover only —
- * no document-theme colors live here (those come from the theme layer). */
+/* Structural styles for the bottom status bar (Typora-style).
+ * Colors (background, border, text) come from the theme layer. */
 
-#statusbar {
-  display: flex
-  align-items: center
-  justify-content: space-between
-  height: 28px
-  padding: 0 10px
-  font-size: 12px
-  line-height: 1
-  user-select: none
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 8px;
+  font-size: 12px;
+  user-select: none;
 }
 
-#statusbar.hidden {
-  display: none
+.statusbar.hidden {
+  display: none;
 }
 
 .sb-group {
-  display: flex
-  align-items: center
-  gap: 6px
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
+/* borderless icon buttons */
 .sb-btn {
-  display: inline-flex
-  align-items: center
-  justify-content: center
-  height: 20px
-  min-width: 20px
-  padding: 0 4px
-  border: none
-  background: transparent
-  border-radius: 4px
-  cursor: pointer
-  font-size: 12px
-  line-height: 1
-  opacity: 0.7
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  min-width: 26px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.12s ease, background 0.12s ease;
 }
 
 .sb-btn:hover {
-  opacity: 1
-  background: rgba(127, 127, 127, 0.18)
+  opacity: 1;
+  background: rgba(127, 127, 127, 0.16);
 }
 
-.sb-btn.sb-toggle-sidebar {
-  font-size: 13px
+.sb-btn.active {
+  opacity: 1;
+  background: rgba(80, 140, 240, 0.18);
+  color: #2f6fed;
 }
 
-.sb-btn.sb-toggle-source {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
-  font-weight: 600
+.sb-toggle-sidebar {
+  font-size: 13px;
 }
 
-.sb-btn.sb-toggle-source.active {
-  opacity: 1
-  background: rgba(127, 127, 127, 0.22)
+.sb-toggle-source {
+  font-family: ui-monospace, Consolas, "Courier New", monospace;
+  font-size: 12px;
+  letter-spacing: -0.5px;
+}
+
+.sb-right {
+  gap: 12px;
+  padding-right: 4px;
 }
 
 .sb-spell {
-  display: inline-flex
-  align-items: center
-  height: 20px
-  padding: 0 4px
-  font-size: 12px
-  opacity: 0.7
+  opacity: 0.6;
+  font-size: 12px;
+  cursor: default;
 }
 
 .sb-words {
-  display: inline-flex
-  align-items: center
-  height: 20px
-  padding: 0 4px
-  white-space: nowrap
-  cursor: default
+  opacity: 0.75;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: default;
 }
