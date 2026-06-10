@@ -158,67 +158,13 @@
   white-space: nowrap;
 }
 
-/* ---- search ---- */
-
-.sb-search-box {
-  flex: 0 0 auto;
-  padding: 2px 12px 8px;
-}
-
-.sb-search-input {
-  width: 100%;
-  box-sizing: border-box;
-  height: 28px;
-  padding: 0 10px;
-  border: 1px solid rgba(127, 127, 127, 0.32);
-  border-radius: 5px;
-  background: rgba(127, 127, 127, 0.06);
-  color: inherit;
-  font-size: 13px;
-  outline: none;
-}
-
-.sb-search-input::placeholder {
-  color: inherit;
-  opacity: 0.45;
-}
-
-.sb-search-input:focus {
-  border-color: rgba(80, 140, 240, 0.7);
-}
-
-.sb-search-count {
-  flex: 0 0 auto;
-  padding: 0 12px 6px;
-  font-size: 12px;
-  opacity: 0.55;
-}
-
-.sb-search-result {
-  display: block;
-  padding: 4px 12px;
-  font-size: 12px;
-  line-height: 1.45;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.85;
-  cursor: default;
-}
-
-.sb-search-result:hover {
-  background: rgba(127, 127, 127, 0.1);
-}
-
-.sb-search-result mark {
-  background: rgba(255, 205, 0, 0.5);
-  color: inherit;
-  border-radius: 2px;
-  padding: 0 1px;
-}
-
+/* empty state for an empty outline / unopened folder — centered, muted */
 .sb-empty {
-  padding: 10px 12px;
-  font-size: 12px;
-  opacity: 0.45;
+  margin-top: 30%;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-line;
+  opacity: 0.5;
 }

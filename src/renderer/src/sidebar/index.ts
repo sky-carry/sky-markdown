@@ -23,9 +23,10 @@ function sortEntries(entries: DirEntry[]): DirEntry[] {
 }
 
 /**
- * Left sidebar (Typora-style). A thin tab strip switches between three panels:
- * outline (大纲), file tree (文件) and in-document search (搜索). Folders in the
- * file tree are read lazily via `window.api.readDir` on first expand.
+ * Left sidebar (Typora-style). A thin tab strip switches between two panels:
+ * file tree (文件) and outline (大纲). Toggled open/closed from the status-bar
+ * round button or the View menu. Folders in the file tree are read lazily via
+ * `window.api.readDir` on first expand.
  */
 export function createSidebar(host: HTMLElement): SidebarApi {
   host.innerHTML = ''
@@ -38,23 +39,21 @@ export function createSidebar(host: HTMLElement): SidebarApi {
   let openFileCb: ((path: string) => void) | null = null
   let jumpHeadingCb: ((slug: string) => void) | null = null
 
-  // ---- tab strip ----
+  // ---- tab strip (文件 | 大纲) ----
   const tabs = document.createElement('div')
   tabs.className = 'sb-tabs'
 
-  const tabDefs: { panel: SidebarPanel; label: string; title: string }[] = [
-    { panel: 'outline', label: '大纲', title: '大纲' },
-    { panel: 'files', label: '文件', title: '文件' },
-    { panel: 'search', label: '搜索', title: '搜索' }
+  const tabDefs: { panel: SidebarPanel; label: string }[] = [
+    { panel: 'files', label: '文件' },
+    { panel: 'outline', label: '大纲' }
   ]
 
   const tabButtons = new Map<SidebarPanel, HTMLButtonElement>()
-
   for (const def of tabDefs) {
     const btn = document.createElement('button')
     btn.type = 'button'
     btn.className = 'sb-tab'
-    btn.title = def.title
+    btn.title = def.label
     btn.textContent = def.label
     btn.addEventListener('click', () => show(def.panel))
     tabButtons.set(def.panel, btn)
@@ -65,53 +64,24 @@ export function createSidebar(host: HTMLElement): SidebarApi {
   const body = document.createElement('div')
   body.className = 'sb-body'
 
-  const outlinePanel = document.createElement('div')
-  outlinePanel.className = 'sb-panel sb-panel-outline'
-
   const filesPanel = document.createElement('div')
   filesPanel.className = 'sb-panel sb-panel-files'
 
-  const searchPanel = document.createElement('div')
-  searchPanel.className = 'sb-panel sb-panel-search'
+  const outlinePanel = document.createElement('div')
+  outlinePanel.className = 'sb-panel sb-panel-outline'
 
-  const searchBox = document.createElement('div')
-  searchBox.className = 'sb-search-box'
-  const searchInput = document.createElement('input')
-  searchInput.type = 'search'
-  searchInput.className = 'sb-search-input'
-  searchInput.placeholder = '在文档中搜索…'
-  searchBox.append(searchInput)
-
-  const searchCount = document.createElement('div')
-  searchCount.className = 'sb-search-count'
-
-  const searchResults = document.createElement('div')
-  searchResults.className = 'sb-search-results'
-
-  searchPanel.append(searchBox, searchCount, searchResults)
-
-  body.append(outlinePanel, filesPanel, searchPanel)
+  body.append(filesPanel, outlinePanel)
   host.append(tabs, body)
 
   const panels = new Map<SidebarPanel, HTMLElement>([
-    ['outline', outlinePanel],
     ['files', filesPanel],
-    ['search', searchPanel]
+    ['outline', outlinePanel]
   ])
-
-  // cache of the most recent markdown passed to search(), so typing in the
-  // input box can re-run the search without main.ts re-feeding the document.
-  let lastMarkdown = ''
-
-  searchInput.addEventListener('input', () => {
-    search(searchInput.value, lastMarkdown)
-  })
 
   function show(panel: SidebarPanel): void {
     activePanel = panel
     for (const [id, el] of panels) el.classList.toggle('active', id === panel)
     for (const [id, btn] of tabButtons) btn.classList.toggle('active', id === panel)
-    if (panel === 'search') searchInput.focus()
   }
 
   function renderEmpty(parent: HTMLElement, text: string): void {
@@ -125,7 +95,7 @@ export function createSidebar(host: HTMLElement): SidebarApi {
   function setOutline(items: OutlineItem[]): void {
     outlinePanel.innerHTML = ''
     if (items.length === 0) {
-      renderEmpty(outlinePanel, '没有标题')
+      renderEmpty(outlinePanel, '大纲内容为空')
       return
     }
     for (const item of items) {
@@ -134,7 +104,7 @@ export function createSidebar(host: HTMLElement): SidebarApi {
       btn.className = 'sb-outline-item'
       btn.textContent = item.text
       btn.title = item.text
-      btn.style.paddingLeft = `${10 + Math.max(0, item.level - 1) * 12}px`
+      btn.style.paddingLeft = `${12 + Math.max(0, item.level - 1) * 12}px`
       btn.addEventListener('click', () => jumpHeadingCb?.(item.slug))
       outlinePanel.append(btn)
     }
@@ -204,7 +174,7 @@ export function createSidebar(host: HTMLElement): SidebarApi {
     }
     parent.innerHTML = ''
     if (entries.length === 0) {
-      renderEmpty(parent, '（空）')
+      renderEmpty(parent, '（空文件夹）')
       return
     }
     for (const entry of sortEntries(entries)) {
@@ -221,51 +191,9 @@ export function createSidebar(host: HTMLElement): SidebarApi {
     await renderTreeInto(tree, path, 0)
   }
 
-  // ---- search ----
-  function search(query: string, markdown: string): void {
-    lastMarkdown = markdown
-    if (searchInput.value !== query) searchInput.value = query
-
-    searchResults.innerHTML = ''
-    const q = query.trim()
-    if (q === '') {
-      searchCount.textContent = ''
-      return
-    }
-
-    const needle = q.toLowerCase()
-    const lines = markdown.split('\n')
-    let matches = 0
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
-      const idx = line.toLowerCase().indexOf(needle)
-      if (idx < 0) continue
-      matches++
-
-      const result = document.createElement('div')
-      result.className = 'sb-search-result'
-      result.title = `第 ${i + 1} 行`
-
-      let from = 0
-      let hit = line.toLowerCase().indexOf(needle, from)
-      while (hit >= 0) {
-        if (hit > from) result.append(document.createTextNode(line.slice(from, hit)))
-        const mark = document.createElement('mark')
-        mark.textContent = line.slice(hit, hit + q.length)
-        result.append(mark)
-        from = hit + q.length
-        hit = line.toLowerCase().indexOf(needle, from)
-      }
-      if (from < line.length) result.append(document.createTextNode(line.slice(from)))
-
-      searchResults.append(result)
-    }
-
-    searchCount.textContent = matches === 0 ? '无结果' : `${matches} 个匹配行`
-  }
-
-  // initial state
+  // initial empty states
+  renderEmpty(filesPanel, '未打开文件夹\n（文件 → 打开文件夹）')
+  renderEmpty(outlinePanel, '大纲内容为空')
   show(activePanel)
 
   return {
@@ -293,8 +221,6 @@ export function createSidebar(host: HTMLElement): SidebarApi {
 
     onJumpHeading(cb: (slug: string) => void): void {
       jumpHeadingCb = cb
-    },
-
-    search
+    }
   }
 }

@@ -75,10 +75,8 @@ export class Dispatcher {
         break
       case Cmd.viewFileList:
       case Cmd.viewFileTree:
-        this.ensureSidebar('files')
-        break
       case Cmd.viewSearch:
-        this.ensureSidebar('search')
+        this.ensureSidebar('files')
         break
       case Cmd.viewSourceMode:
         this.d.statusbar.setSourceMode(this.d.editor.toggleSourceMode())
@@ -206,7 +204,7 @@ export class Dispatcher {
 
   // ---- helpers ----
 
-  private ensureSidebar(panel: 'outline' | 'files' | 'search'): void {
+  private ensureSidebar(panel: 'outline' | 'files'): void {
     if (!this.d.sidebar.isVisible()) {
       this.d.sidebar.toggle()
       this.d.appEl.classList.remove('sidebar-collapsed')

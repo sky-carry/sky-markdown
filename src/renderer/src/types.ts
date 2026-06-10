@@ -35,9 +35,10 @@ export interface EditorApi {
   toHtml(): string
 }
 
-export type SidebarPanel = 'outline' | 'files' | 'search'
+export type SidebarPanel = 'files' | 'outline'
 
-/** Left sidebar with outline / file-tree / search. Implemented in sidebar/index.ts. */
+/** Left sidebar with two tabs: file tree (文件) and outline (大纲).
+ *  Implemented in sidebar/index.ts. */
 export interface SidebarApi {
   readonly el: HTMLElement
   toggle(): boolean
@@ -47,7 +48,6 @@ export interface SidebarApi {
   setFolder(path: string): Promise<void>
   onOpenFile(cb: (path: string) => void): void
   onJumpHeading(cb: (slug: string) => void): void
-  search(query: string, markdown: string): void
 }
 
 /** Bottom status bar. Implemented in statusbar/index.ts. */
