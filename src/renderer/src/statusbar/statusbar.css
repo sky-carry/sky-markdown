@@ -5,7 +5,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
+  /* #statusbar is a direct child of <body>; its height is owned by app.css
+     (var(--statusbar-height)). Do NOT set height:100% here — that would make the
+     bar 100vh tall and push its buttons far below the visible strip. */
+  height: var(--statusbar-height);
   padding: 0 8px;
   font-size: 12px;
   user-select: none;
