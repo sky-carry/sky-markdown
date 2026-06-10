@@ -30,7 +30,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
 
   const template: MenuItemConstructorOptions[] = [
     {
-      label: '文件',
+      label: '文件(&F)',
       submenu: [
         { label: '新建', accelerator: 'CmdOrCtrl+N', click: send(Cmd.fileNew) },
         { label: '新建窗口', click: send(Cmd.fileNewWindow) },
@@ -66,7 +66,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
       ]
     },
     {
-      label: '编辑',
+      label: '编辑(&E)',
       submenu: [
         { label: '撤销', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
         { label: '重做', accelerator: 'CmdOrCtrl+Y', role: 'redo' },
@@ -106,7 +106,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
       ]
     },
     {
-      label: '段落',
+      label: '段落(&P)',
       submenu: [
         { label: '一级标题', accelerator: 'CmdOrCtrl+1', click: send(Cmd.paraHeading1) },
         { label: '二级标题', accelerator: 'CmdOrCtrl+2', click: send(Cmd.paraHeading2) },
@@ -152,7 +152,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
       ]
     },
     {
-      label: '格式',
+      label: '格式(&O)',
       submenu: [
         { label: '加粗', accelerator: 'CmdOrCtrl+B', click: send(Cmd.fmtBold) },
         { label: '斜体', accelerator: 'CmdOrCtrl+I', click: send(Cmd.fmtItalic) },
@@ -168,7 +168,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
       ]
     },
     {
-      label: '视图',
+      label: '视图(&V)',
       submenu: [
         {
           label: '显示/隐藏侧边栏',
@@ -214,7 +214,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
       ]
     },
     {
-      label: '主题',
+      label: '主题(&T)',
       submenu: [
         { label: 'Github', type: 'radio', checked: true, click: send(Cmd.themeGithub) },
         { label: 'Newsprint', type: 'radio', click: send(Cmd.themeNewsprint) },
@@ -224,7 +224,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
       ]
     },
     {
-      label: '帮助',
+      label: '帮助(&H)',
       submenu: [
         { label: "What's New...", click: send(Cmd.helpQuickStart) },
         { label: 'Quick Start', click: send(Cmd.helpQuickStart) },

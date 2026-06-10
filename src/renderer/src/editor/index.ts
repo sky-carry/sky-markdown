@@ -17,12 +17,19 @@ import { gfm, toggleStrikethroughCommand, insertTableCommand } from '@milkdown/k
 import { history, undoCommand, redoCommand } from '@milkdown/kit/plugin/history'
 import { listener, listenerCtx } from '@milkdown/kit/plugin/listener'
 import { clipboard } from '@milkdown/kit/plugin/clipboard'
+// gap-cursor (reach the gap before the first / after the last block) + drop-cursor
+import { cursor } from '@milkdown/kit/plugin/cursor'
+// keep an empty trailing paragraph so the caret can always go past the last block
+import { trailing } from '@milkdown/kit/plugin/trailing'
 import { callCommand, replaceAll, getMarkdown } from '@milkdown/kit/utils'
 
 import { Cmd } from '../../../shared/commands'
 import type { CommandId } from '../../../shared/commands'
 import type { EditorApi, EditorStats, OutlineItem } from '../types'
 
+import { listExitKeymap } from './list-exit'
+// makes the gap-cursor (a blinking caret in the gap before/after a block) visible
+import '@milkdown/kit/prose/gapcursor/style/gapcursor.css'
 import './editor.css'
 
 /**
@@ -117,19 +124,24 @@ export function createEditor(): EditorApi {
             emitChange(markdown)
           })
         })
+        // registered first so its Enter/Backspace handlers win over commonmark's
+        .use(listExitKeymap)
         .use(commonmark)
         .use(gfm)
         .use(history)
         .use(clipboard)
+        .use(cursor)
+        .use(trailing)
         .use(listener)
         .create()
 
       mounted = true
       cachedMarkdown = initial
       pendingMarkdown = null
-    } catch {
+    } catch (err) {
       // Even if creation fails, keep the cached markdown so the rest of the
       // API stays usable (source mode, stats, outline) without throwing.
+      console.error('[editor] Milkdown failed to mount:', err)
       mounted = false
       cachedMarkdown = initial
       pendingMarkdown = null
