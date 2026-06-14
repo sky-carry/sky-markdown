@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sky Markdown — 免费的 Typora 风格 Markdown 编辑器</title>
+<meta name="description" content="Sky Markdown 是一款开源、免费的所见即所得 Markdown 编辑器，Typora 风格，基于 Electron + Milkdown，支持多标签页、实时渲染、主题切换与导出。" />
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #24292f;
+    --muted: #57606a;
+    --line: #e6e8eb;
+    --accent: #2f6fed;
+    --accent-soft: #eaf1ff;
+    --code-bg: #f6f8fa;
+    --radius: 14px;
+    --max: 1080px;
+    --font: -apple-system, "Segoe UI", system-ui, "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--fg);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #eef3ff 0%, transparent 55%),
+      radial-gradient(900px 500px at -10% 0%, #f1fbf6 0%, transparent 50%),
+      var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+
+  /* ---- nav ---- */
+  header.nav {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: saturate(160%) blur(10px);
+    background: rgba(255,255,255,0.72);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { display: flex; align-items: center; gap: 16px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .logo {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, #2f6fed, #4eb6a6);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 16px;
+    box-shadow: 0 4px 12px rgba(47,111,237,0.32);
+  }
+  .nav-spacer { flex: 1; }
+  .nav-links { display: flex; gap: 22px; align-items: center; font-size: 14.5px; }
+  .nav-links a { color: var(--muted); }
+  .nav-links a:hover { color: var(--fg); text-decoration: none; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 16px; border-radius: 9px; font-weight: 600; font-size: 14.5px;
+    border: 1px solid transparent; cursor: pointer; transition: transform .08s ease, box-shadow .15s ease;
+  }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(47,111,237,0.28); }
+  .btn-primary:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-ghost { border-color: var(--line); color: var(--fg); background: #fff; }
+  .btn-ghost:hover { text-decoration: none; border-color: #cfd5dc; }
+
+  /* ---- hero ---- */
+  .hero { padding: 72px 0 36px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1.25fr; gap: 48px; align-items: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    background: var(--accent-soft); color: var(--accent); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 44px; line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.5px; }
+  .hero h1 .grad {
+    background: linear-gradient(120deg, #2f6fed, #19b48a);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lead { font-size: 18px; color: var(--muted); margin: 0 0 26px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .meta-row { margin-top: 22px; display: flex; gap: 22px; color: var(--muted); font-size: 13.5px; flex-wrap: wrap; }
+  .meta-row b { color: var(--fg); }
+
+  /* ---- editor mockup ---- */
+  .mock {
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 60px -24px rgba(20,40,90,0.35), 0 8px 20px -12px rgba(20,40,90,0.2);
+    background: #fff;
+  }
+  .mock-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f3f5f8; border-bottom: 1px solid var(--line); }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .mock-title { margin-left: 8px; font-size: 12.5px; color: var(--muted); }
+  .mock-tabs { display: flex; background: #fafbfc; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+  .mtab { padding: 7px 14px; border-right: 1px solid var(--line); color: var(--muted); display: flex; align-items: center; gap: 7px; }
+  .mtab.active { background: #fff; color: var(--fg); box-shadow: inset 0 2px 0 var(--accent); }
+  .mtab .x { opacity: .5; }
+  .mock-body { display: grid; grid-template-columns: 150px 1fr; min-height: 320px; }
+  .mock-side { background: #fafbfc; border-right: 1px solid var(--line); padding: 12px 10px; font-size: 12.5px; color: var(--muted); }
+  .mock-side .sec { font-weight: 700; color: #8a93a0; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; margin: 4px 6px 8px; }
+  .mock-side .o { padding: 4px 8px; border-radius: 6px; }
+  .mock-side .o.l2 { padding-left: 18px; }
+  .mock-side .o.cur { background: var(--accent-soft); color: var(--accent); }
+  .mock-doc { padding: 22px 26px; }
+  .mock-doc h2 { margin: 0 0 6px; font-size: 22px; }
+  .mock-doc h3 { margin: 18px 0 6px; font-size: 15px; color: #3a4350; }
+  .mock-doc p { margin: 8px 0; font-size: 13.5px; color: #3d4550; }
+  .mock-doc .tag { color: var(--accent); }
+  .mock-doc code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; font-family: Consolas, Menlo, monospace; }
+  .mock-doc pre { background: var(--code-bg); border-radius: 8px; padding: 12px 14px; font-size: 12.5px; font-family: Consolas, Menlo, monospace; overflow: auto; color: #2b3440; margin: 12px 0; }
+  .mock-doc ul { margin: 8px 0; padding-left: 20px; font-size: 13.5px; color: #3d4550; }
+  .mock-doc blockquote { margin: 12px 0; padding: 2px 14px; border-left: 3px solid #cfe0c6; color: #5b6b52; background: #f6faf4; border-radius: 0 6px 6px 0; }
+  .caret { display: inline-block; width: 2px; height: 1.05em; background: var(--accent); vertical-align: -2px; animation: blink 1.05s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .mock-status { display: flex; justify-content: space-between; padding: 6px 14px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--muted); background: #fafbfc; }
+  .mock-status .g { display: flex; gap: 12px; }
+
+  /* ---- sections ---- */
+  section { padding: 56px 0; }
+  .sec-head { text-align: center; max-width: 640px; margin: 0 auto 40px; }
+  .sec-head h2 { font-size: 30px; margin: 0 0 10px; letter-spacing: -0.4px; }
+  .sec-head p { color: var(--muted); font-size: 16px; margin: 0; }
+
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card {
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 20px; background: #fff;
+    transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -20px rgba(20,40,90,0.4); border-color: #d9e0ea; }
+  .ic {
+    width: 42px; height: 42px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 21px; margin-bottom: 14px; background: var(--accent-soft);
+  }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  /* ---- tech / compare strip ---- */
+  .strip { background: #0f172a; color: #e6ebf3; border-radius: 20px; padding: 40px; }
+  .strip h2 { color: #fff; }
+  .tech-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+  .chip { padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); font-size: 13.5px; }
+  .strip .lead { color: #aab4c5; font-size: 16px; margin: 0 0 4px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; counter-reset: s; }
+  .step { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 20px; position: relative; background:#fff; }
+  .step::before {
+    counter-increment: s; content: counter(s);
+    position: absolute; top: -14px; left: 20px; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 14px;
+    box-shadow: 0 6px 14px rgba(47,111,237,0.35);
+  }
+  .step h3 { margin: 8px 0 6px; font-size: 16px; }
+  .step p { margin: 0; color: var(--muted); font-size: 14px; }
+  .step code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; font-family: Consolas, Menlo, monospace; font-size: 12.5px; }
+
+  /* ---- CTA ---- */
+  .cta { text-align: center; padding: 60px 0; }
+  .cta h2 { font-size: 30px; margin: 0 0 12px; }
+  .cta p { color: var(--muted); font-size: 16px; margin: 0 0 24px; }
+
+  footer { border-top: 1px solid var(--line); padding: 30px 0; color: var(--muted); font-size: 13.5px; }
+  .foot-inner { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 32px; }
+    .features, .steps { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .hero h1 { font-size: 34px; }
+    .mock-body { grid-template-columns: 1fr; }
+    .mock-side { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="logo">S</span> Sky Markdown</div>
+    <div class="nav-spacer"></div>
+    <nav class="nav-links">
+      <a href="#features">功能</a>
+      <a href="#tech">技术</a>
+      <a href="#start">开始使用</a>
+      <a href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <a class="btn btn-primary" href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">⭐ 源码</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="pill">✨ 开源免费 · Typora 替代品</span>
+        <h1>所见即所得的<br><span class="grad">Markdown 编辑器</span></h1>
+        <p class="lead">Sky Markdown 让你像写文档一样写 Markdown —— 输入即渲染，没有分屏预览的割裂感。多标签页、大纲导航、主题切换，专注于纯粹的写作。</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">在 GitHub 查看 →</a>
+          <a class="btn btn-ghost" href="#start">如何运行</a>
+        </div>
+        <div class="meta-row">
+          <span>💻 <b>Windows</b> 桌面应用</span>
+          <span>⚡ 基于 <b>Electron + Milkdown</b></span>
+          <span>🆓 <b>MIT</b> 开源协议</span>
+        </div>
+      </div>
+
+      <div class="mock" aria-hidden="true">
+        <div class="mock-bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="mock-title">Sky Markdown — 产品介绍.md</span>
+        </div>
+        <div class="mock-tabs">
+          <div class="mtab active">产品介绍.md <span class="x">✕</span></div>
+          <div class="mtab">README.md <span class="x">✕</span></div>
+          <div class="mtab">未命名-1 <span class="x">✕</span></div>
+        </div>
+        <div class="mock-body">
+          <div class="mock-side">
+            <div class="sec">大纲</div>
+            <div class="o cur">Sky Markdown</div>
+            <div class="o l2">核心特性</div>
+            <div class="o l2">快速开始</div>
+            <div class="sec" style="margin-top:14px">文件</div>
+            <div class="o">📄 产品介绍.md</div>
+            <div class="o">📄 README.md</div>
+          </div>
+          <div class="mock-doc">
+            <h2># Sky Markdown</h2>
+            <p>一个 <span class="tag">**Typora 风格**</span> 的所见即所得编辑器。</p>
+            <h3>核心特性</h3>
+            <ul>
+              <li>实时渲染，无需分屏预览</li>
+              <li>多标签页，像浏览器一样切换</li>
+              <li>支持 <code>行内代码</code>、表格、任务列表</li>
+            </ul>
+            <blockquote>“写作时，工具应该消失。”</blockquote>
+            <pre>console.log('Hello, Sky Markdown')<span class="caret"></span></pre>
+          </div>
+        </div>
+        <div class="mock-status">
+          <div class="g"><span>○ 侧边栏</span><span>&lt;/&gt; 源码</span></div>
+          <div class="g"><span>A✓ 拼写</span><span>128 词 ⌃</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>为写作而生的功能</h2>
+        <p>抽取 Typora 的核心体验，去掉多余的负担。</p>
+      </div>
+      <div class="features">
+        <div class="card"><div class="ic">✍️</div><h3>真·所见即所得</h3><p>基于 Milkdown / ProseMirror，输入 Markdown 语法即时渲染为成品样式，所写即所得。</p></div>
+        <div class="card"><div class="ic">🗂️</div><h3>多标签页</h3><p>每个文档一个标签，像文本编辑器一样在同一窗口里自由切换，未保存有小圆点提示。</p></div>
+        <div class="card"><div class="ic">🧭</div><h3>大纲 / 文件侧边栏</h3><p>自动生成标题大纲，一键跳转；内置文件树，打开文件夹直接浏览。</p></div>
+        <div class="card"><div class="ic">🔍</div><h3>查找和替换</h3><p>Ctrl+H 浮层式查找替换，支持区分大小写、逐个替换与全部替换。</p></div>
+        <div class="card"><div class="ic">🎨</div><h3>多主题切换</h3><p>内置 GitHub、Newsprint、Night、Pixyll、Whitey 五套主题，明暗随心。</p></div>
+        <div class="card"><div class="ic">📤</div><h3>导出与源码模式</h3><p>一键导出 HTML / PDF，随时切换源代码模式查看原始 Markdown。</p></div>
+        <div class="card"><div class="ic">🎯</div><h3>专注 / 打字机模式</h3><p>专注模式淡化非当前段落，打字机模式保持光标行居中，沉浸书写。</p></div>
+        <div class="card"><div class="ic">🔤</div><h3>拼写检查与字数统计</h3><p>状态栏一键开关拼写检查，实时字数、字符、行数与预计阅读时长。</p></div>
+        <div class="card"><div class="ic">⌨️</div><h3>完整菜单与快捷键</h3><p>文件 / 编辑 / 段落 / 格式 / 视图 / 主题全套菜单，配合熟悉的快捷键。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tech">
+    <div class="wrap">
+      <div class="strip">
+        <p class="lead">技术栈</p>
+        <h2 style="margin:0 0 8px;font-size:26px;">现代、轻量、纯前端渲染</h2>
+        <p style="color:#aab4c5;max-width:680px;margin:0 0 6px;">渲染层完全运行在浏览器内核中，跨平台能力天然具备；当前打包面向 Windows 发行。</p>
+        <div class="tech-list">
+          <span class="chip">Electron 33</span>
+          <span class="chip">TypeScript</span>
+          <span class="chip">Milkdown v7</span>
+          <span class="chip">ProseMirror</span>
+          <span class="chip">electron-vite</span>
+          <span class="chip">electron-builder</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>三步开始使用</h2>
+        <p>克隆仓库即可在本地运行开发版。</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <h3>克隆仓库</h3>
+          <p><code>git clone https://github.com/sky-carry/sky-markdown</code></p>
+        </div>
+        <div class="step">
+          <h3>安装依赖</h3>
+          <p>进入目录后执行 <code>npm install</code>，等待依赖装好。</p>
+        </div>
+        <div class="step">
+          <h3>启动 / 打包</h3>
+          <p><code>npm run dev</code> 启动开发版，<code>npm run build:win</code> 生成 Windows 安装包。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <h2>开始你的纯粹写作</h2>
+      <p>免费、开源，自己掌控的 Markdown 编辑器。</p>
+      <a class="btn btn-primary" href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener" style="padding:13px 26px;font-size:16px;">前往 GitHub 仓库 →</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div>© 2026 Sky Markdown · 基于 MIT 协议开源</div>
+    <div>由 Electron + Milkdown 构建 · <a href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">github.com/sky-carry/sky-markdown</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

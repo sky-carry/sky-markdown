@@ -1,0 +1,53 @@
+# Caddy 配置（版本化参考副本）
+# 服务器上仓库 clone 在 /home/code/sky-personal，Caddy 直接服务仓库目录。
+# 同步到生效位置：
+#   cp deploy/Caddyfile /etc/caddy/Caddyfile && caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy
+
+# 80 端口（IP 直连）：根=作品集，/me=个人主页，/sky-tool=Sky 工具箱，/sky-md=Sky Markdown 介绍页
+:80 {
+	redir /me /me/ permanent
+	redir /sky-tool /sky-tool/ permanent
+	redir /sky-md /sky-md/ permanent
+	handle_path /me/* {
+		root * /home/code/sky-personal/me
+		file_server
+	}
+	handle_path /sky-tool/* {
+		root * /home/code/sky-tool
+		file_server
+	}
+	handle_path /sky-md/* {
+		root * /home/code/sky-md
+		file_server
+	}
+	handle {
+		root * /home/code/sky-personal/showcase
+		file_server
+	}
+}
+
+# 域名（备案通过后自动 HTTPS）：根=作品集，/me=个人主页，/voc=SKG VOC 看板，/sky-tool=Sky 工具箱，/sky-md=Sky Markdown 介绍页
+skyyjj.cn {
+	redir /me /me/ permanent
+	redir /sky-tool /sky-tool/ permanent
+	redir /sky-md /sky-md/ permanent
+	handle_path /me/* {
+		root * /home/code/sky-personal/me
+		file_server
+	}
+	handle_path /voc/* {
+		reverse_proxy localhost:8050
+	}
+	handle_path /sky-tool/* {
+		root * /home/code/sky-tool
+		file_server
+	}
+	handle_path /sky-md/* {
+		root * /home/code/sky-md
+		file_server
+	}
+	handle {
+		root * /home/code/sky-personal/showcase
+		file_server
+	}
+}
