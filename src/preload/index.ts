@@ -36,7 +36,9 @@ const api: SkyApi = {
     return () => ipcRenderer.removeListener(Channels.recentChanged, listener)
   },
   setTitle: (title) => ipcRenderer.send(Channels.windowSetTitle, title),
-  setDirty: (dirty) => ipcRenderer.send(Channels.windowSetDirty, dirty)
+  setDirty: (dirty) => ipcRenderer.send(Channels.windowSetDirty, dirty),
+  setAlwaysOnTop: (on) =>
+    ipcRenderer.invoke(Channels.windowSetAlwaysOnTop, on) as Promise<boolean>
 }
 
 contextBridge.exposeInMainWorld('api', api)

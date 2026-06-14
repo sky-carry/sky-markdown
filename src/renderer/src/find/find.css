@@ -1,0 +1,85 @@
+/* Floating find & replace panel, pinned to the top-right of the editor area. */
+
+.findbar {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--find-bg, #ffffff);
+  color: var(--find-fg, #2c2c2c);
+  border: 1px solid rgba(127, 127, 127, 0.28);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  font-size: 12px;
+}
+
+.findbar[hidden] {
+  display: none;
+}
+
+.fb-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fb-input {
+  width: 180px;
+  padding: 4px 8px;
+  border: 1px solid rgba(127, 127, 127, 0.35);
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.fb-input:focus {
+  border-color: #2f6fed;
+}
+
+.fb-count {
+  min-width: 44px;
+  text-align: center;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.fb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid rgba(127, 127, 127, 0.28);
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.fb-btn:hover {
+  background: rgba(127, 127, 127, 0.16);
+}
+
+.fb-case {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.85;
+}
+
+.fb-case input {
+  margin: 0;
+}

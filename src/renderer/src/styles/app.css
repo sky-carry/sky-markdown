@@ -44,8 +44,19 @@ body {
 }
 
 .content {
+  position: relative;
   flex: 1 1 auto;
+  min-width: 0;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The single scroll container for the document. The tab strip sits above it and
+   stays fixed while the document scrolls. */
+.content-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   justify-content: center;
@@ -81,7 +92,7 @@ body {
 
 /* Typewriter mode keeps the caret line vertically centered: it needs a large
    bottom gap so the last lines can still scroll up to the middle of the view. */
-.app.typewriter-mode .content {
+.app.typewriter-mode .content-scroll {
   scroll-padding-top: 40vh;
 }
 

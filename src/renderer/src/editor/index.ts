@@ -5,11 +5,15 @@ import {
   toggleStrongCommand,
   toggleEmphasisCommand,
   toggleInlineCodeCommand,
+  toggleLinkCommand,
+  insertImageCommand,
   wrapInHeadingCommand,
   turnIntoTextCommand,
   wrapInBulletListCommand,
   wrapInOrderedListCommand,
   wrapInBlockquoteCommand,
+  sinkListItemCommand,
+  liftListItemCommand,
   insertHrCommand,
   createCodeBlockCommand
 } from '@milkdown/kit/preset/commonmark'
@@ -22,6 +26,7 @@ import { cursor } from '@milkdown/kit/plugin/cursor'
 // keep an empty trailing paragraph so the caret can always go past the last block
 import { trailing } from '@milkdown/kit/plugin/trailing'
 import { callCommand, replaceAll, getMarkdown } from '@milkdown/kit/utils'
+import { Selection, AllSelection, TextSelection } from '@milkdown/kit/prose/state'
 
 import { Cmd } from '../../../shared/commands'
 import type { CommandId } from '../../../shared/commands'
@@ -150,6 +155,212 @@ export function createEditor(): EditorApi {
     }
   }
 
+  // ---- custom editing operations (no ready-made Milkdown command) ----
+
+  /** Select the whole document. */
+  function selectAllText(): void {
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      view.dispatch(view.state.tr.setSelection(new AllSelection(view.state.doc)))
+      view.focus()
+    })
+  }
+
+  /** Strip every inline mark (bold/italic/code/link…) from the selection. */
+  function clearMarks(): void {
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const { from, to, empty } = view.state.selection
+      if (empty) return
+      view.dispatch(view.state.tr.removeMark(from, to, null))
+    })
+  }
+
+  /** Select the text of the current paragraph / block (Edit → 选中行). */
+  function selectCurrentLine(): void {
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const { $from } = view.state.selection
+      const start = $from.start()
+      const end = $from.end()
+      view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, start, end)))
+      view.focus()
+    })
+  }
+
+  /** Delete the current top-level block (Edit → 删除该行). */
+  function deleteCurrentLine(): void {
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const { state } = view
+      const { $from } = state.selection
+      // Range covering the whole top-level block the caret sits in.
+      const before = $from.before(1)
+      const after = $from.after(1)
+      view.dispatch(state.tr.delete(before, after).scrollIntoView())
+      view.focus()
+    })
+  }
+
+  /** Move the current top-level block up or down among its siblings. */
+  function moveCurrentBlock(dir: -1 | 1): void {
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const { state } = view
+      const { $from } = state.selection
+      const index = $from.index(0)
+      const parent = $from.node(0)
+      const target = index + dir
+      if (target < 0 || target >= parent.childCount) return
+      const block = parent.child(index)
+      const start = $from.before(1)
+      const end = $from.after(1)
+      let tr = state.tr.delete(start, end)
+      // Insert position for the neighbour: when moving down, account for the
+      // gap left by the deletion.
+      let insertPos: number
+      if (dir < 0) {
+        insertPos = start - parent.child(target).nodeSize
+      } else {
+        insertPos = start + parent.child(target).nodeSize
+      }
+      tr = tr.insert(insertPos, block)
+      const caret = Selection.near(tr.doc.resolve(Math.min(insertPos + 1, tr.doc.content.size)))
+      tr = tr.setSelection(caret).scrollIntoView()
+      view.dispatch(tr)
+      view.focus()
+    })
+  }
+
+  /** Toggle the current bullet-list item between a plain item and a task item. */
+  function toggleTaskList(): void {
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      // Make sure we're inside a list first.
+      let inList = false
+      const { $from } = view.state.selection
+      for (let d = $from.depth; d > 0; d--) {
+        if ($from.node(d).type.name === 'list_item') {
+          inList = true
+          break
+        }
+      }
+      if (!inList) callCommand(wrapInBulletListCommand.key)(ctx)
+
+      const state = view.state
+      const $pos = state.selection.$from
+      for (let d = $pos.depth; d > 0; d--) {
+        const node = $pos.node(d)
+        if (node.type.name === 'list_item') {
+          const pos = $pos.before(d)
+          const checked = node.attrs.checked
+          const next = checked === null || checked === undefined ? false : null
+          view.dispatch(state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, checked: next }))
+          break
+        }
+      }
+      view.focus()
+    })
+  }
+
+  /** Insert / toggle a hyperlink on the selection (prompts for the URL). */
+  function insertHyperlink(): void {
+    const url = window.prompt('请输入链接地址 (URL)：', 'https://')
+    if (!url) return
+    try {
+      safeAction(callCommand(toggleLinkCommand.key, { href: url }))
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Insert an image at the caret (prompts for the URL). */
+  function insertImage(): void {
+    const src = window.prompt('请输入图片地址 (URL)：', 'https://')
+    if (!src) return
+    try {
+      safeAction(callCommand(insertImageCommand.key, { src }))
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // ---- find & replace (operates over the live ProseMirror document) ----
+
+  /** Collect every match range of `query` across the document's text nodes. */
+  function findRanges(query: string, caseSensitive: boolean): Array<{ from: number; to: number }> {
+    const ranges: Array<{ from: number; to: number }> = []
+    if (!query) return ranges
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const needle = caseSensitive ? query : query.toLowerCase()
+      view.state.doc.descendants((node, pos) => {
+        if (!node.isText || !node.text) return
+        const hay = caseSensitive ? node.text : node.text.toLowerCase()
+        let i = hay.indexOf(needle)
+        while (i !== -1) {
+          ranges.push({ from: pos + i, to: pos + i + query.length })
+          i = hay.indexOf(needle, i + Math.max(1, query.length))
+        }
+      })
+    })
+    return ranges
+  }
+
+  /** Select the next match after the caret (wraps around). Returns match count. */
+  function findNext(query: string, caseSensitive = false): number {
+    let count = 0
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const ranges = findRanges(query, caseSensitive)
+      count = ranges.length
+      if (count === 0) return
+      const cursor = view.state.selection.to
+      const next = ranges.find((r) => r.from >= cursor) ?? ranges[0]
+      view.dispatch(
+        view.state.tr
+          .setSelection(TextSelection.create(view.state.doc, next.from, next.to))
+          .scrollIntoView()
+      )
+      view.focus()
+    })
+    return count
+  }
+
+  /** If the current selection is a match, replace it, then advance. Returns remaining count. */
+  function replaceNext(query: string, replacement: string, caseSensitive = false): number {
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const { from, to } = view.state.selection
+      const selected = view.state.doc.textBetween(from, to)
+      const matches = caseSensitive
+        ? selected === query
+        : selected.toLowerCase() === query.toLowerCase()
+      if (matches && selected.length > 0) {
+        view.dispatch(view.state.tr.insertText(replacement, from, to))
+      }
+    })
+    return findNext(query, caseSensitive)
+  }
+
+  /** Replace every match in the document. Returns the number replaced. */
+  function replaceAllText(query: string, replacement: string, caseSensitive = false): number {
+    let replaced = 0
+    safeAction((ctx) => {
+      const view = ctx.get(editorViewCtx)
+      const ranges = findRanges(query, caseSensitive)
+      if (ranges.length === 0) return
+      let tr = view.state.tr
+      // Apply right-to-left so earlier positions stay valid.
+      for (let i = ranges.length - 1; i >= 0; i--) {
+        tr = tr.insertText(replacement, ranges[i].from, ranges[i].to)
+      }
+      view.dispatch(tr)
+      replaced = ranges.length
+    })
+    return replaced
+  }
+
   function getMarkdownText(): string {
     if (sourceMode && textarea) return textarea.value
     const live = safeAction(getMarkdown())
@@ -180,14 +391,31 @@ export function createEditor(): EditorApi {
     changeCallbacks.push(cb)
   }
 
-  function focus(): void {
+  function focus(atEnd = false): void {
     if (sourceMode && textarea) {
       textarea.focus()
       return
     }
     safeAction((ctx) => {
-      ctx.get(editorViewCtx).focus()
+      const view = ctx.get(editorViewCtx)
+      // After replaceAll (e.g. File→New) the document is rebuilt and the leftover
+      // selection can land on a position that renders no visible caret (most
+      // notably on a fresh empty document). Place a real text selection inside
+      // the document — atStart/atEnd resolve into the first/last text block — so a
+      // blinking caret always appears, then move focus into the editable surface.
+      const doc = view.state.doc
+      const sel = atEnd ? Selection.atEnd(doc) : Selection.atStart(doc)
+      view.dispatch(view.state.tr.setSelection(sel).scrollIntoView())
+      view.focus()
     })
+  }
+
+  /** Reset to a blank document and drop a visible caret in (used by File→New / new tab). */
+  function newDocument(): void {
+    setMarkdown('')
+    // The view was just rebuilt by replaceAll(''); let it settle one frame, then
+    // place the caret at the start of the empty paragraph.
+    requestAnimationFrame(() => focus(false))
   }
 
   function runCommand(id: CommandId, arg?: string): boolean {
@@ -205,6 +433,21 @@ export function createEditor(): EditorApi {
         return call(undoCommand.key)
       case Cmd.editRedo:
         return call(redoCommand.key)
+      case Cmd.editSelectAll:
+        selectAllText()
+        return true
+      case Cmd.editSelectLine:
+        selectCurrentLine()
+        return true
+      case Cmd.editDeleteLine:
+        deleteCurrentLine()
+        return true
+      case Cmd.editMoveLineUp:
+        moveCurrentBlock(-1)
+        return true
+      case Cmd.editMoveLineDown:
+        moveCurrentBlock(1)
+        return true
 
       case Cmd.fmtBold:
         return call(toggleStrongCommand.key)
@@ -214,6 +457,15 @@ export function createEditor(): EditorApi {
         return call(toggleInlineCodeCommand.key)
       case Cmd.fmtStrikethrough:
         return call(toggleStrikethroughCommand.key)
+      case Cmd.fmtHyperlink:
+        insertHyperlink()
+        return true
+      case Cmd.fmtImage:
+        insertImage()
+        return true
+      case Cmd.fmtClearStyle:
+        clearMarks()
+        return true
 
       case Cmd.paraHeading1:
         return call(wrapInHeadingCommand.key, 1)
@@ -233,6 +485,13 @@ export function createEditor(): EditorApi {
         return call(wrapInBulletListCommand.key)
       case Cmd.paraOrderedList:
         return call(wrapInOrderedListCommand.key)
+      case Cmd.paraTaskList:
+        toggleTaskList()
+        return true
+      case Cmd.paraIndent:
+        return call(sinkListItemCommand.key)
+      case Cmd.paraOutdent:
+        return call(liftListItemCommand.key)
       case Cmd.paraQuote:
         return call(wrapInBlockquoteCommand.key)
       case Cmd.paraCodeBlock:
@@ -334,6 +593,7 @@ export function createEditor(): EditorApi {
     mount,
     getMarkdown: getMarkdownText,
     setMarkdown,
+    newDocument,
     runCommand,
     onChange,
     focus,
@@ -343,6 +603,9 @@ export function createEditor(): EditorApi {
     getStats,
     scrollToHeading,
     setSpellCheck,
+    findNext,
+    replaceNext,
+    replaceAll: replaceAllText,
     toHtml
   }
 }

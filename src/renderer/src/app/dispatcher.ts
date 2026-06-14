@@ -1,48 +1,71 @@
 import { Cmd } from '../../../shared/commands'
 import type { CommandId, ThemeId } from '../../../shared/commands'
-import type { EditorApi, SidebarApi, StatusBarApi, ThemeApi } from '../types'
+import type { EditorApi, SidebarApi, StatusBarApi, TabBarApi, TabState, ThemeApi } from '../types'
+import { createFindBar, type FindBarApi } from '../find'
 
 interface Deps {
   editor: EditorApi
   sidebar: SidebarApi
   statusbar: StatusBarApi
+  tabs: TabBarApi
   theme: ThemeApi
   appEl: HTMLElement
+  /** Host for the floating find/replace panel (the content area). */
+  contentEl: HTMLElement
 }
 
 /**
- * Routes every menu command to the right subsystem and owns the open document's
- * lifecycle (current path + dirty flag). It is intentionally the only place that
- * knows how the modules fit together.
+ * Routes every menu command to the right subsystem and owns the open documents'
+ * lifecycle. Each open file/new doc is a tab; the editor always shows the active
+ * tab's content. A tab's dirty flag is derived by comparing the live markdown to
+ * the last saved/loaded `baseline` — robust against the editor's debounced change
+ * events. It is intentionally the only place that knows how the modules fit
+ * together.
  */
 export class Dispatcher {
-  private currentPath: string | null = null
-  private dirty = false
   private zoom = 1
+  private untitledSeq = 0
+  private alwaysOnTop = false
+  private find: FindBarApi
 
-  constructor(private d: Deps) {}
+  constructor(private d: Deps) {
+    this.find = createFindBar(d.contentEl, d.editor)
+  }
 
-  init(): void {
-    this.d.editor.onChange(() => this.onDocChanged())
+  init(welcomeMarkdown: string): void {
+    this.d.editor.onChange((md) => this.onDocChanged(md))
     this.d.sidebar.onOpenFile((p) => this.openPath(p))
     this.d.sidebar.onJumpHeading((slug) => this.d.editor.scrollToHeading(slug))
     this.d.statusbar.onToggleSidebar(() => this.run(Cmd.viewToggleSidebar))
     this.d.statusbar.onToggleSource(() => this.run(Cmd.viewSourceMode))
     this.d.statusbar.onToggleSpellCheck((on) => this.d.editor.setSpellCheck(on))
+
+    // Tab intents.
+    this.d.tabs.onSelect((id) => this.switchTab(id))
+    this.d.tabs.onCloseIntent((id) => this.closeTab(id))
+    this.d.tabs.onNew(() => this.newDoc())
+
+    // Seed the first tab with the welcome document.
+    const tab = this.d.tabs.add({ title: '欢迎', path: null, markdown: welcomeMarkdown })
+    this.d.editor.setMarkdown(welcomeMarkdown)
+    tab.baseline = this.d.editor.getMarkdown()
+    tab.markdown = tab.baseline
+    tab.dirty = false
     this.refreshDerived()
-    this.updateTitle()
+    this.syncWindow()
+    requestAnimationFrame(() => this.d.editor.focus())
   }
 
   /** Entry point for menu commands. */
   run(id: CommandId, arg?: string): void {
     // 1) Let the editor claim editor/format/paragraph/edit commands first.
     if (this.d.editor.runCommand(id, arg)) {
-      this.onDocChanged()
       return
     }
     // 2) Otherwise route by domain.
     switch (id) {
       case Cmd.fileNew:
+      case Cmd.fileNewWindow:
         this.newDoc()
         break
       case Cmd.fileOpen:
@@ -60,11 +83,24 @@ export class Dispatcher {
       case Cmd.fileSaveAs:
         this.save(true)
         break
+      case Cmd.fileSaveAll:
+        this.saveAll()
+        break
+      case Cmd.fileClose:
+        this.closeActive()
+        break
+      case Cmd.filePrint:
+        window.print()
+        break
       case Cmd.fileExportHtml:
       case Cmd.fileExportPdf:
       case Cmd.fileExportWord:
       case Cmd.fileExportImage:
         this.exportDoc(id)
+        break
+
+      case Cmd.editFindReplace:
+        this.find.toggle()
         break
 
       case Cmd.viewToggleSidebar:
@@ -93,6 +129,9 @@ export class Dispatcher {
         break
       case Cmd.viewWordCount:
         this.d.statusbar.toggleWordCount()
+        break
+      case Cmd.viewAlwaysOnTop:
+        this.toggleAlwaysOnTop()
         break
       case Cmd.viewActualSize:
         this.setZoom(1)
@@ -133,37 +172,93 @@ export class Dispatcher {
     }
   }
 
-  // ---- document lifecycle ----
+  // ---- tab + document lifecycle ----
 
-  private async newDoc(): Promise<void> {
-    if (!(await this.confirmDiscard())) return
-    this.d.editor.setMarkdown('')
-    this.currentPath = null
-    this.setDirty(false)
+  /** Persist the editor's current content into the active tab and recompute dirty. */
+  private stashActive(): void {
+    const tab = this.d.tabs.active()
+    if (!tab) return
+    tab.markdown = this.d.editor.getMarkdown()
+    tab.dirty = tab.markdown !== tab.baseline
+  }
+
+  /** Load a tab's content into the editor (preserving its dirty state). */
+  private showTab(tab: TabState): void {
+    this.d.editor.setMarkdown(tab.markdown)
     this.refreshDerived()
-    this.updateTitle()
-    this.d.editor.focus()
+    this.syncWindow()
+    requestAnimationFrame(() => this.d.editor.focus())
+  }
+
+  private nextUntitledTitle(): string {
+    this.untitledSeq += 1
+    return `未命名-${this.untitledSeq}`
+  }
+
+  private newDoc(): void {
+    this.stashActive()
+    this.d.tabs.add({ title: this.nextUntitledTitle(), path: null, markdown: '' })
+    this.d.editor.newDocument()
+    this.refreshDerived()
+    this.syncWindow()
   }
 
   private async openDialog(): Promise<void> {
-    if (!(await this.confirmDiscard())) return
     const res = await window.api.openFile()
     if (res) this.loadFile(res.path, res.content)
   }
 
   private async openPath(path: string): Promise<void> {
-    if (!(await this.confirmDiscard())) return
+    const existing = this.d.tabs.findByPath(path)
+    if (existing) {
+      this.switchTab(existing.id)
+      return
+    }
     const res = await window.api.readFile(path)
     if (res) this.loadFile(res.path, res.content)
   }
 
   private loadFile(path: string, content: string): void {
-    this.d.editor.setMarkdown(content)
-    this.currentPath = path
-    this.setDirty(false)
+    // Already open? Just switch to it.
+    const existing = this.d.tabs.findByPath(path)
+    if (existing) {
+      this.switchTab(existing.id)
+      return
+    }
+
+    const title = baseName(path)
+    const current = this.d.tabs.active()
+    // Reuse a pristine untitled tab (e.g. the initial welcome / a blank new tab)
+    // instead of piling up an empty tab next to the opened file.
+    if (current && current.path === null && !current.dirty) {
+      current.path = path
+      current.title = title
+      this.d.editor.setMarkdown(content)
+      current.baseline = this.d.editor.getMarkdown()
+      current.markdown = current.baseline
+      current.dirty = false
+      this.d.tabs.render()
+    } else {
+      this.stashActive()
+      const tab = this.d.tabs.add({ title, path, markdown: content })
+      this.d.editor.setMarkdown(content)
+      tab.baseline = this.d.editor.getMarkdown()
+      tab.markdown = tab.baseline
+      tab.dirty = false
+    }
     window.api.addRecent(path)
     this.refreshDerived()
-    this.updateTitle()
+    this.syncWindow()
+    requestAnimationFrame(() => this.d.editor.focus())
+  }
+
+  private switchTab(id: string): void {
+    const current = this.d.tabs.active()
+    if (current && current.id === id) return
+    this.stashActive()
+    this.d.tabs.setActive(id)
+    const tab = this.d.tabs.active()
+    if (tab) this.showTab(tab)
   }
 
   private async openFolder(): Promise<void> {
@@ -175,18 +270,69 @@ export class Dispatcher {
   }
 
   private async save(forceDialog: boolean): Promise<void> {
+    const tab = this.d.tabs.active()
+    if (!tab) return
     const md = this.d.editor.getMarkdown()
-    if (this.currentPath && !forceDialog) {
-      const ok = await window.api.writeFile(this.currentPath, md)
-      if (ok) this.setDirty(false)
+    tab.markdown = md
+    if (tab.path && !forceDialog) {
+      const ok = await window.api.writeFile(tab.path, md)
+      if (ok) this.markSaved(tab, md)
       return
     }
-    const newPath = await window.api.saveFile(this.currentPath, md)
+    const newPath = await window.api.saveFile(tab.path, md)
     if (newPath) {
-      this.currentPath = newPath
+      tab.path = newPath
+      tab.title = baseName(newPath)
+      this.markSaved(tab, md)
       window.api.addRecent(newPath)
-      this.setDirty(false)
-      this.updateTitle()
+    }
+  }
+
+  private async saveAll(): Promise<void> {
+    // Make sure the active tab's latest edits are captured first.
+    this.stashActive()
+    for (const tab of this.d.tabs.list()) {
+      if (!tab.dirty || !tab.path) continue
+      const ok = await window.api.writeFile(tab.path, tab.markdown)
+      if (ok) this.markSaved(tab, tab.markdown)
+    }
+    // Any dirty untitled tabs still need a Save-As; do the active one if applicable.
+    const active = this.d.tabs.active()
+    if (active && active.dirty && !active.path) await this.save(false)
+  }
+
+  private markSaved(tab: TabState, md: string): void {
+    tab.baseline = md
+    tab.markdown = md
+    tab.dirty = false
+    this.d.tabs.render()
+    this.syncWindow()
+  }
+
+  private closeActive(): void {
+    const tab = this.d.tabs.active()
+    if (tab) this.closeTab(tab.id)
+  }
+
+  private closeTab(id: string): void {
+    const tab = this.d.tabs.get(id)
+    if (!tab) return
+    // Capture latest edits so the dirty check reflects reality.
+    if (this.d.tabs.active()?.id === id) this.stashActive()
+    if (tab.dirty && !window.confirm(`「${tab.title}」尚未保存，确定关闭吗？`)) return
+
+    const wasActive = this.d.tabs.active()?.id === id
+    this.d.tabs.remove(id)
+
+    if (this.d.tabs.list().length === 0) {
+      // Always keep at least one tab open.
+      this.d.tabs.add({ title: this.nextUntitledTitle(), path: null, markdown: '' })
+      this.d.editor.newDocument()
+      this.refreshDerived()
+      this.syncWindow()
+    } else if (wasActive) {
+      const next = this.d.tabs.active()
+      if (next) this.showTab(next)
     }
   }
 
@@ -222,6 +368,10 @@ export class Dispatcher {
     this.d.appEl.classList.toggle('statusbar-hidden', hidden)
   }
 
+  private async toggleAlwaysOnTop(): Promise<void> {
+    this.alwaysOnTop = await window.api.setAlwaysOnTop(!this.alwaysOnTop)
+  }
+
   private setZoom(z: number): void {
     this.zoom = Math.min(2.5, Math.max(0.5, Math.round(z * 100) / 100))
     ;(document.body.style as unknown as { zoom: string }).zoom = String(this.zoom)
@@ -231,8 +381,17 @@ export class Dispatcher {
     this.d.theme.apply(id)
   }
 
-  private onDocChanged(): void {
-    if (!this.dirty) this.setDirty(true)
+  private onDocChanged(md: string): void {
+    const tab = this.d.tabs.active()
+    if (tab) {
+      tab.markdown = md
+      const nowDirty = md !== tab.baseline
+      if (nowDirty !== tab.dirty) {
+        tab.dirty = nowDirty
+        this.d.tabs.render()
+        this.syncWindow()
+      }
+    }
     this.refreshDerived()
   }
 
@@ -241,26 +400,24 @@ export class Dispatcher {
     this.d.sidebar.setOutline(this.d.editor.getOutline())
   }
 
-  private setDirty(dirty: boolean): void {
-    this.dirty = dirty
-    window.api.setDirty(dirty)
-    this.updateTitle()
-  }
-
   private baseName(): string {
-    if (!this.currentPath) return 'Untitled'
-    const parts = this.currentPath.split(/[\\/]/)
-    return parts[parts.length - 1].replace(/\.[^.]+$/, '')
+    const tab = this.d.tabs.active()
+    if (!tab) return 'Untitled'
+    if (!tab.path) return tab.title
+    return baseName(tab.path).replace(/\.[^.]+$/, '')
   }
 
-  private updateTitle(): void {
-    const name = this.currentPath ? this.baseName() : 'Untitled'
-    const title = `${this.dirty ? '• ' : ''}${name} - Sky Markdown`
-    window.api.setTitle(title)
+  private syncWindow(): void {
+    const tab = this.d.tabs.active()
+    const name = tab ? tab.title : 'Untitled'
+    const dirty = tab ? tab.dirty : false
+    window.api.setTitle(`${dirty ? '• ' : ''}${name} - Sky Markdown`)
+    window.api.setDirty(dirty)
   }
+}
 
-  private async confirmDiscard(): Promise<boolean> {
-    if (!this.dirty) return true
-    return window.confirm('当前文档尚未保存，确定要放弃更改吗？')
-  }
+/** Last path segment (works for both \\ and / separators). */
+function baseName(path: string): string {
+  const parts = path.split(/[\\/]/)
+  return parts[parts.length - 1] || path
 }

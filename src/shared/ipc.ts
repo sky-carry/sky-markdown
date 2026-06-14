@@ -20,6 +20,8 @@ export const Channels = {
   /** renderer -> main: report dirty / title state so the window chrome can update */
   windowSetTitle: 'window:setTitle',
   windowSetDirty: 'window:setDirty',
+  /** renderer -> main: toggle "keep window on top"; returns the new boolean state */
+  windowSetAlwaysOnTop: 'window:setAlwaysOnTop',
   /** main -> renderer: app asks renderer for current markdown (e.g. before save) */
   requestContent: 'editor:requestContent',
   /** main -> renderer: rebuild the recent-files submenu */
@@ -67,4 +69,6 @@ export interface SkyApi {
   onRecentChanged(handler: (paths: string[]) => void): () => void
   setTitle(title: string): void
   setDirty(dirty: boolean): void
+  /** Toggle "keep window on top"; resolves to the new state. */
+  setAlwaysOnTop(on: boolean): Promise<boolean>
 }

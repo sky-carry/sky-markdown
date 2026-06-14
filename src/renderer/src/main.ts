@@ -2,33 +2,31 @@ import './styles/app.css'
 import { createEditor } from './editor'
 import { createSidebar } from './sidebar'
 import { createStatusBar } from './statusbar'
+import { createTabBar } from './tabs'
 import { createTheme } from './theme'
 import { Dispatcher } from './app/dispatcher'
 
 async function bootstrap(): Promise<void> {
   const appEl = document.getElementById('app') as HTMLElement
+  const contentEl = document.getElementById('content') as HTMLElement
   const editorHost = document.getElementById('editor') as HTMLElement
   const sidebarEl = document.getElementById('sidebar') as HTMLElement
   const statusbarEl = document.getElementById('statusbar') as HTMLElement
+  const tabbarEl = document.getElementById('tabbar') as HTMLElement
 
   const theme = createTheme(appEl)
   const editor = createEditor()
   const sidebar = createSidebar(sidebarEl)
   const statusbar = createStatusBar(statusbarEl)
+  const tabs = createTabBar(tabbarEl)
 
   await editor.mount(editorHost)
 
-  const dispatcher = new Dispatcher({ editor, sidebar, statusbar, theme, appEl })
-  dispatcher.init()
+  const dispatcher = new Dispatcher({ editor, sidebar, statusbar, tabs, theme, appEl, contentEl })
+  dispatcher.init(WELCOME)
 
   // Receive native-menu commands from the main process.
   window.api.onMenuCommand((payload) => dispatcher.run(payload.id, payload.arg))
-
-  // Seed with a welcome document so the editor isn't blank on first launch.
-  editor.setMarkdown(WELCOME)
-  statusbar.setStats(editor.getStats())
-  sidebar.setOutline(editor.getOutline())
-  editor.focus()
 }
 
 const WELCOME = `# 欢迎使用 Sky Markdown

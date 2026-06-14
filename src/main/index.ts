@@ -64,6 +64,11 @@ function createWindow(): void {
     if (!mainWindow) return
     mainWindow.setDocumentEdited(dirty)
   })
+  ipcMain.handle(Channels.windowSetAlwaysOnTop, (_e, on: boolean): boolean => {
+    if (!mainWindow) return false
+    mainWindow.setAlwaysOnTop(on)
+    return mainWindow.isAlwaysOnTop()
+  })
 
   // Right-click menu with spell-check suggestions + basic editing actions.
   mainWindow.webContents.on('context-menu', (_e, params) => {
