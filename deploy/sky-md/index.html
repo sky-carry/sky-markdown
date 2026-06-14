@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sky Markdown — 免费的 Typora 风格 Markdown 编辑器</title>
-<meta name="description" content="Sky Markdown 是一款开源、免费的所见即所得 Markdown 编辑器，Typora 风格，基于 Electron + Milkdown，支持多标签页、实时渲染、主题切换与导出。" />
+<meta name="description" content="Sky Markdown 是一款免费、开源的所见即所得 Markdown 编辑器，Typora 风格，基于 Electron + Milkdown，支持多标签页、实时渲染、主题切换与导出。" />
+<link rel="icon" type="image/png" href="icon.png" />
 <style>
   :root {
     --bg: #ffffff;
@@ -12,6 +13,7 @@
     --muted: #57606a;
     --line: #e6e8eb;
     --accent: #2f6fed;
+    --accent2: #19b48a;
     --accent-soft: #eaf1ff;
     --code-bg: #f6f8fa;
     --radius: 14px;
@@ -44,13 +46,7 @@
   }
   .nav-inner { display: flex; align-items: center; gap: 16px; height: 60px; }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
-  .logo {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: linear-gradient(135deg, #2f6fed, #4eb6a6);
-    display: inline-flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 800; font-size: 16px;
-    box-shadow: 0 4px 12px rgba(47,111,237,0.32);
-  }
+  .brand img { width: 30px; height: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(47,111,237,0.28); }
   .nav-spacer { flex: 1; }
   .nav-links { display: flex; gap: 22px; align-items: center; font-size: 14.5px; }
   .nav-links a { color: var(--muted); }
@@ -79,7 +75,8 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .hero p.lead { font-size: 18px; color: var(--muted); margin: 0 0 26px; }
-  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .dl-note { font-size: 12.5px; color: var(--muted); margin-left: 2px; }
   .meta-row { margin-top: 22px; display: flex; gap: 22px; color: var(--muted); font-size: 13.5px; flex-wrap: wrap; }
   .meta-row b { color: var(--fg); }
 
@@ -137,7 +134,7 @@
   .card h3 { margin: 0 0 6px; font-size: 17px; }
   .card p { margin: 0; color: var(--muted); font-size: 14px; }
 
-  /* ---- tech / compare strip ---- */
+  /* ---- tech strip ---- */
   .strip { background: #0f172a; color: #e6ebf3; border-radius: 20px; padding: 40px; }
   .strip h2 { color: #fff; }
   .tech-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
@@ -158,11 +155,19 @@
 
   /* ---- CTA ---- */
   .cta { text-align: center; padding: 60px 0; }
-  .cta h2 { font-size: 30px; margin: 0 0 12px; }
-  .cta p { color: var(--muted); font-size: 16px; margin: 0 0 24px; }
+  .cta-card {
+    border-radius: 22px; padding: 50px 30px; color: #fff;
+    background: linear-gradient(120deg, #2f6fed, #19b48a);
+    box-shadow: 0 24px 50px -24px rgba(25,120,160,0.6);
+  }
+  .cta-card h2 { font-size: 30px; margin: 0 0 12px; color: #fff; }
+  .cta-card p { color: rgba(255,255,255,0.9); font-size: 16px; margin: 0 0 24px; }
+  .btn-white { background: #fff; color: var(--accent); font-weight: 700; }
+  .btn-white:hover { text-decoration: none; transform: translateY(-1px); }
 
   footer { border-top: 1px solid var(--line); padding: 30px 0; color: var(--muted); font-size: 13.5px; }
   .foot-inner { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .foot-inner a { color: var(--muted); }
 
   @media (max-width: 880px) {
     .hero-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -178,15 +183,15 @@
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <div class="brand"><span class="logo">S</span> Sky Markdown</div>
+    <div class="brand"><img src="icon.png" alt="Sky Markdown" /> Sky Markdown</div>
     <div class="nav-spacer"></div>
     <nav class="nav-links">
       <a href="#features">功能</a>
       <a href="#tech">技术</a>
       <a href="#start">开始使用</a>
-      <a href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">GitHub</a>
     </nav>
-    <a class="btn btn-primary" href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">⭐ 源码</a>
+    <a class="btn btn-ghost" href="/" title="返回作品集">← 返回作品集</a>
+    <a class="btn btn-primary" href="Sky-Markdown-0.1.0-win-x64.zip" download>⬇ 下载</a>
   </div>
 </header>
 
@@ -194,12 +199,13 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <span class="pill">✨ 开源免费 · Typora 替代品</span>
+        <span class="pill">✨ 免费 · 开源 · Typora 替代品</span>
         <h1>所见即所得的<br><span class="grad">Markdown 编辑器</span></h1>
         <p class="lead">Sky Markdown 让你像写文档一样写 Markdown —— 输入即渲染，没有分屏预览的割裂感。多标签页、大纲导航、主题切换，专注于纯粹的写作。</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">在 GitHub 查看 →</a>
-          <a class="btn btn-ghost" href="#start">如何运行</a>
+          <a class="btn btn-primary" href="Sky-Markdown-0.1.0-win-x64.zip" download style="padding:12px 22px;font-size:16px;">⬇ 下载 Windows 版</a>
+          <a class="btn btn-ghost" href="#start">如何使用</a>
+          <span class="dl-note">免安装便携版 · ~106 MB · Windows x64</span>
         </div>
         <div class="meta-row">
           <span>💻 <b>Windows</b> 桌面应用</span>
@@ -215,7 +221,7 @@
         </div>
         <div class="mock-tabs">
           <div class="mtab active">产品介绍.md <span class="x">✕</span></div>
-          <div class="mtab">README.md <span class="x">✕</span></div>
+          <div class="mtab">笔记.md <span class="x">✕</span></div>
           <div class="mtab">未命名-1 <span class="x">✕</span></div>
         </div>
         <div class="mock-body">
@@ -226,7 +232,7 @@
             <div class="o l2">快速开始</div>
             <div class="sec" style="margin-top:14px">文件</div>
             <div class="o">📄 产品介绍.md</div>
-            <div class="o">📄 README.md</div>
+            <div class="o">📄 笔记.md</div>
           </div>
           <div class="mock-doc">
             <h2># Sky Markdown</h2>
@@ -281,7 +287,6 @@
           <span class="chip">Milkdown v7</span>
           <span class="chip">ProseMirror</span>
           <span class="chip">electron-vite</span>
-          <span class="chip">electron-builder</span>
         </div>
       </div>
     </div>
@@ -291,20 +296,20 @@
     <div class="wrap">
       <div class="sec-head">
         <h2>三步开始使用</h2>
-        <p>克隆仓库即可在本地运行开发版。</p>
+        <p>免安装便携版，解压即用，不写入注册表。</p>
       </div>
       <div class="steps">
         <div class="step">
-          <h3>克隆仓库</h3>
-          <p><code>git clone https://github.com/sky-carry/sky-markdown</code></p>
+          <h3>下载</h3>
+          <p>点击上方「下载 Windows 版」，获取 <code>Sky-Markdown-win-x64.zip</code>。</p>
         </div>
         <div class="step">
-          <h3>安装依赖</h3>
-          <p>进入目录后执行 <code>npm install</code>，等待依赖装好。</p>
+          <h3>解压</h3>
+          <p>将压缩包解压到任意目录（例如桌面或 D 盘）。</p>
         </div>
         <div class="step">
-          <h3>启动 / 打包</h3>
-          <p><code>npm run dev</code> 启动开发版，<code>npm run build:win</code> 生成 Windows 安装包。</p>
+          <h3>运行</h3>
+          <p>双击文件夹内的 <code>Sky Markdown.exe</code> 即可开始写作。</p>
         </div>
       </div>
     </div>
@@ -312,9 +317,11 @@
 
   <section class="cta">
     <div class="wrap">
-      <h2>开始你的纯粹写作</h2>
-      <p>免费、开源，自己掌控的 Markdown 编辑器。</p>
-      <a class="btn btn-primary" href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener" style="padding:13px 26px;font-size:16px;">前往 GitHub 仓库 →</a>
+      <div class="cta-card">
+        <h2>开始你的纯粹写作</h2>
+        <p>免费、便携、自己掌控的 Markdown 编辑器。</p>
+        <a class="btn btn-white" href="Sky-Markdown-0.1.0-win-x64.zip" download style="padding:13px 26px;font-size:16px;">⬇ 下载 Windows 版（便携版）</a>
+      </div>
     </div>
   </section>
 </main>
@@ -322,7 +329,7 @@
 <footer>
   <div class="wrap foot-inner">
     <div>© 2026 Sky Markdown · 基于 MIT 协议开源</div>
-    <div>由 Electron + Milkdown 构建 · <a href="https://github.com/sky-carry/sky-markdown" target="_blank" rel="noopener">github.com/sky-carry/sky-markdown</a></div>
+    <div><a href="/">← 返回作品集</a> · 由 Electron + Milkdown 构建</div>
   </div>
 </footer>
 

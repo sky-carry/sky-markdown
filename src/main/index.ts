@@ -1,8 +1,19 @@
 import { app, BrowserWindow, Menu, ipcMain } from 'electron'
+import { existsSync } from 'fs'
 import { join } from 'path'
 import { Channels } from '../shared/ipc'
 import { createAppMenu } from './menu'
 import { registerFileHandlers, getRecent } from './fileManager'
+
+/** Resolve the app icon across dev (build/icon.png) and packaged (resources/app/icon.png). */
+function resolveIcon(): string | undefined {
+  const candidates = [
+    join(app.getAppPath(), 'icon.png'),
+    join(app.getAppPath(), 'build', 'icon.png'),
+    join(process.resourcesPath, 'app', 'icon.png')
+  ]
+  return candidates.find((p) => existsSync(p))
+}
 
 // 某些环境（远程桌面 RDP / 虚拟机 / 缺少 GPU 驱动 / 安全软件拦截）下，Chromium 的
 // GPU 子进程根本启动不起来（"GPU process launch failed: error_code=65"），随后触发
@@ -33,6 +44,7 @@ export function refreshMenu(): void {
 }
 
 function createWindow(): void {
+  const icon = resolveIcon()
   mainWindow = new BrowserWindow({
     width: 1100,
     height: 760,
@@ -40,6 +52,7 @@ function createWindow(): void {
     minHeight: 420,
     title: 'Sky Markdown',
     backgroundColor: '#ffffff',
+    ...(icon ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
