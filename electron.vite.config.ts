@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { defineConfig } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 
 // ┌─────────────────────────────────────────────────────────────────────┐
 // │ 修改开发服务器端口 / Host 就在这里。                                  │
@@ -13,6 +13,8 @@ const DEV_HOST = process.env.SKY_DEV_HOST || '0.0.0.0'
 
 export default defineConfig({
   main: {
+    // 把 node 依赖（electron-updater 等）外置，避免被打进 bundle 导致运行时报错
+    plugins: [externalizeDepsPlugin()],
     build: {
       rollupOptions: {
         input: { index: resolve(__dirname, 'src/main/index.ts') }

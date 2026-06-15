@@ -4,6 +4,7 @@ import { join } from 'path'
 import { Channels } from '../shared/ipc'
 import { createAppMenu } from './menu'
 import { registerFileHandlers, getRecent } from './fileManager'
+import { setupAutoUpdate } from './updater'
 
 /** Resolve the app icon across dev (build/icon.png) and packaged (resources/app/icon.png). */
 function resolveIcon(): string | undefined {
@@ -134,6 +135,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   registerFileHandlers(getWindow, refreshMenu)
   createWindow()
+  setupAutoUpdate() // 打包版启动后检查更新
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

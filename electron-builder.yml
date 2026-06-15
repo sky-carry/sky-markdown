@@ -18,3 +18,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   shortcutName: Sky Markdown
+# 自动更新源：构建时生成 latest.yml，客户端从该地址检查更新
+publish:
+  provider: generic
+  url: http://124.223.55.175/sky-md/

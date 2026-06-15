@@ -5,6 +5,7 @@ import { Channels } from '../shared/ipc'
 import { Cmd } from '../shared/commands'
 import type { CommandId } from '../shared/commands'
 import type { MenuCommandPayload } from '../shared/ipc'
+import { checkForUpdatesManually } from './updater'
 
 /**
  * Build the native application menu (Chinese labels, Typora-style layout).
@@ -233,6 +234,7 @@ export function createAppMenu(win: BrowserWindow, recentPaths: string[]): Menu {
         { label: '反馈', click: send(Cmd.helpFeedback) },
         { label: '官方网站', click: send(Cmd.helpWebsite) },
         { type: 'separator' },
+        { label: '检查更新...', click: () => checkForUpdatesManually() },
         { label: '关于', click: send(Cmd.helpAbout) }
       ]
     }
