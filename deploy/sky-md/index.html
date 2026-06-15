@@ -166,6 +166,16 @@
   .btn-white:hover { text-decoration: none; transform: translateY(-1px); }
 
   footer { border-top: 1px solid var(--line); padding: 30px 0; color: var(--muted); font-size: 13.5px; }
+
+  /* ---- changelog ---- */
+  .rel-list { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  .rel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; box-shadow: 0 8px 24px -18px rgba(20,40,90,0.3); }
+  .rel-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .rel-ver { font-weight: 700; font-size: 18px; }
+  .rel-tag { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .rel-date { color: var(--muted); font-size: 13px; margin-left: auto; }
+  .rel ul { margin: 12px 0 0; padding-left: 20px; color: var(--muted); }
+  .rel li { margin: 5px 0; font-size: 14px; }
   .foot-inner { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
   .foot-inner a { color: var(--muted); }
 
@@ -188,6 +198,7 @@
     <nav class="nav-links">
       <a href="#features">功能</a>
       <a href="#tech">技术</a>
+      <a href="#changelog">更新</a>
       <a href="#start">开始使用</a>
     </nav>
     <a class="btn btn-ghost" href="/" title="返回作品集">← 返回作品集</a>
@@ -296,7 +307,7 @@
     <div class="wrap">
       <div class="sec-head">
         <h2>三步开始使用</h2>
-        <p>免安装便携版，解压即用，不写入注册表。</p>
+        <p>下载安装包，一步装好，安装后自动检查更新。</p>
       </div>
       <div class="steps">
         <div class="step">
@@ -310,6 +321,31 @@
         <div class="step">
           <h3>运行</h3>
           <p>从开始菜单或桌面快捷方式启动即可。以后有新版会自动提示更新（也可在「帮助 → 检查更新」手动检查）。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="changelog">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>版本更新</h2>
+        <p>安装后自动检查更新，发现新版会提示一键升级；也可在「帮助 → 检查更新」手动检查。</p>
+      </div>
+      <div class="rel-list">
+        <div class="rel">
+          <div class="rel-head">
+            <span class="rel-ver">v1.0.0</span>
+            <span class="rel-tag">最新</span>
+            <span class="rel-date">2026-06-15</span>
+          </div>
+          <ul>
+            <li>所见即所得 Markdown 编辑（Milkdown / ProseMirror），输入即渲染</li>
+            <li>多标签页、大纲导航、文件树侧边栏、查找替换</li>
+            <li>五套主题、专注 / 打字机模式、源码模式、HTML / PDF 导出</li>
+            <li>拼写检查与实时字数统计，全套菜单与快捷键</li>
+            <li>新增「检查更新」：发现新版可一键下载并自动安装升级</li>
+          </ul>
         </div>
       </div>
     </div>
